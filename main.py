@@ -1,7 +1,7 @@
 import file
 import config
 import gpt
-from messages import Message, SystemMessage, UserMessage, BotMessage, Conversation
+from conversation import Message, SystemMessage, UserMessage, BotMessage, Conversation
 
 c = Conversation(system=SystemMessage('You are a helpful assistant.'))
 c.append(UserMessage(content='Hello world from user!'))

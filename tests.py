@@ -1,7 +1,7 @@
 import unittest
 
 from parameterized import parameterized_class, parameterized
-from messages import *
+from conversation import *
 
 
 @parameterized_class(('message_class', 'expected_role'), [
