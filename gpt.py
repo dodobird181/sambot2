@@ -4,13 +4,24 @@ import openai
 
 client = openai.OpenAI(api_key=config.OPENAI_API_KEY)
 
+def stream(conversation, model='gpt-4', **kwargs):
+    for chunk in client.chat.completions.create(
+        model=model,
+        messages=list(conversation),
+        stream=True,
+        **kwargs,
+    ):
+        if content := chunk.choices[0].delta.content:
+            #print('')
+            yield content
+
 
 def create(prompt=None, messages=None, stream=False, model='gpt-4', **kwargs):
     """
     Handles stream v.s. non-stream creation and prompt v.s. messages creation, while
     still allowing any arbitrary parameters to enter the API call.
     """
-    create_function = _create_stream if stream else _create_flat
+    create_function = response_stream if stream else _create_flat
     messages = messages if messages else [
         {"role": "system", "content": "You are a helpful assistant."},
         {"role": "user", "content": prompt},
@@ -38,13 +49,13 @@ def _create_flat(*args, **kwargs):
         print('Error parsing GPT completion.')
 
 
-def _create_stream(*args, **kwargs):
+def response_stream(*args, **kwargs):
     """
     Create a chat-completion stream and return a generator yielding the string results.
     """
     try:
-        for chunk in _request_completion(*args, stream=True, **kwargs):
+        for chunk in client.chat.completions.create(*args, **kwargs, stream=True):
             if content := chunk.choices[0].delta.content:
                 yield content
     except Exception as e:
-        print('Error parsing GPT completion stream.')
+        raise openai.OpenAIError from e

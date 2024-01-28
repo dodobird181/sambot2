@@ -2,12 +2,11 @@ import config
 import gpt
 from conversation import Message, SystemMessage, UserMessage, BotMessage, Conversation
 
-import time
-m1 = UserMessage('Hey!')
-time.sleep(1)
-m2 = UserMessage('Hey!')
-print(m1.created_at)
-print(m2.created_at)
+convo = Conversation(SystemMessage('You are a helpful assistant named Dave.'))
+convo.append(UserMessage('Hi, what is your name? Who are you? Where am i?'))
+
+for token in gpt.stream(convo):
+    print(token, end='')
 
 exit(0)
 
@@ -57,7 +56,7 @@ def call_bot(user_prompt: str, messages: Messages, bot_personality: str):
     # this is because `create` waits for `_create_stream` to compute everything before
     # returning and I can't figure out how to yeild on the non-streaming calls. I think
     # i might just split these out into two separate functions...
-    response_stream = gpt._create_stream(messages=messages.all(), model='gpt-4')
+    response_stream = gpt.response_stream(messages=messages.all(), model='gpt-4')
 
     response_flat = ''
     for token in response_stream:

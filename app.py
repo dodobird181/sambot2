@@ -2,7 +2,7 @@ from flask import Flask, request, jsonify
 
 app = Flask(__name__)
 
-@app.route('/api/message', methods=['POST'])
+@app.route('/chat', methods=['POST'])
 def process_message():
     content = request.json.get('content')
     conversation_id = request.json.get('conversation_id', 'default_id')  # Default value if not provided

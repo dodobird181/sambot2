@@ -4,6 +4,7 @@ from msgspec import DecodeError
 from datetime import datetime
 from config import DATA_FILEPATH
 import os
+from app import app
 
 
 """
