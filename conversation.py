@@ -11,13 +11,13 @@ class Message(UserDict, abc.ABC):
     the ChatGPT API expects messages to be in a dictionary format.
     """
 
-    def __init__(self, content: str):
+    def __init__(self, content: str, created_at: datetime=None):
         super().__init__()
         self |= {
             'role': self.role(),
             'content': content,
         }
-        self.created_at = datetime.now()
+        self.created_at = created_at if created_at else datetime.now()
 
     @abc.abstractmethod
     def role(self) -> str:
@@ -61,9 +61,9 @@ class Conversation(UserList):
     persistance methods for saving data across user-sessions.
     """
 
-    def __init__(self, system: SystemMessage):
+    def __init__(self, system: SystemMessage, id: uuid=uuid.uuid4()):
         super().__init__([system])
-        self.id = uuid.uuid4()
+        self.id = id
 
     def set_system(self, system: SystemMessage):
         """

@@ -1,5 +1,4 @@
 import config
-import logger
 import openai
 
 
@@ -26,7 +25,7 @@ def _request_completion(*args, **kwargs):
     try:
         return client.chat.completions.create(*args, **kwargs)
     except openai.APIError as e:
-        logger.error('Error generating GPT completion.', exc_info=e)
+        print('Error generating GPT completion.')
 
 
 def _create_flat(*args, **kwargs):
@@ -36,7 +35,7 @@ def _create_flat(*args, **kwargs):
     try:
         return _request_completion(*args, **kwargs).choices[0].message.content
     except Exception as e:
-        logger.error('Error parsing GPT completion.', exc_info=e)
+        print('Error parsing GPT completion.')
 
 
 def _create_stream(*args, **kwargs):
@@ -48,4 +47,4 @@ def _create_stream(*args, **kwargs):
             if content := chunk.choices[0].delta.content:
                 yield content
     except Exception as e:
-        logger.error('Error parsing GPT completion stream.', exc_info=e)
+        print('Error parsing GPT completion stream.')

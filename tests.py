@@ -3,8 +3,9 @@ import os
 
 from parameterized import parameterized_class, parameterized
 from conversation import *
-from persistance import save_conversation
+from persistance import load_conversation, save_conversation
 from config import TEST_DATA_FILEPATH
+from msgspec.json import encode
 
 
 if not os.path.exists(TEST_DATA_FILEPATH):
@@ -144,12 +145,47 @@ class TestPersistance(unittest.TestCase):
         self.addCleanup(self.delete_app_data)
 
     def test_save_conversation(self):
-        # TODO: make this not a meta test but a real test...
         convo = Conversation(system=SystemMessage('dummy system message'))
         convo.append(UserMessage('dummy user message'))
         convo.append(BotMessage('dummy bot message'))
         save_conversation(convo, path=TEST_DATA_FILEPATH)
         datafiles = os.listdir(TEST_DATA_FILEPATH)
+        self.assertEqual(1, len(datafiles), 'A single datafile exists.')
+        self.assertEqual(f'{str(convo.id)}.json', datafiles[0], 'The datafile name is convo id.')
+
+    def test_load_conversation(self):
+        id = 'test_conversation_id'
+        with open(f'{TEST_DATA_FILEPATH}{id}.json', 'wb') as file:
+            file.write(encode({
+                "id": id,
+                "messages":[
+                    {
+                        "role": "system",
+                        "content": "dummy system message",
+                        "created_at": "2024-01-28T00:12:10.106641",
+                    },
+                    {
+                        "role": "user",
+                        "content": "dummy user message",
+                        "created_at": "2024-01-28T00:12:10.106642",
+                    },
+                    {
+                        "role": "assistant",
+                        "content": "dummy bot message",
+                        "created_at": "2024-01-28T00:12:10.106643"
+                    }
+                ]}))
+        convo = load_conversation(id, path=TEST_DATA_FILEPATH)
+        self.assertListEqual(list(convo), [
+            {'role': 'system', 'content': 'dummy system message'},
+            {'role': 'user', 'content': 'dummy user message'},
+            {'role': 'assistant', 'content': 'dummy bot message'},
+        ], 'Load loads messages from the conversation.')
+        self.assertEqual(convo[0].created_at, datetime.fromisoformat('2024-01-28T00:12:10.106641'))
+        self.assertEqual(convo[1].created_at, datetime.fromisoformat('2024-01-28T00:12:10.106642'))
+        self.assertEqual(convo[2].created_at, datetime.fromisoformat('2024-01-28T00:12:10.106643'))
+
+
 
 
 

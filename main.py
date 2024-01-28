@@ -1,12 +1,14 @@
-import file
 import config
 import gpt
 from conversation import Message, SystemMessage, UserMessage, BotMessage, Conversation
 
-c = Conversation(system=SystemMessage('You are a helpful assistant.'))
-c.append(UserMessage(content='Hello world from user!'))
-c.latest_message(SystemMessage)
-print(c)
+import time
+m1 = UserMessage('Hey!')
+time.sleep(1)
+m2 = UserMessage('Hey!')
+print(m1.created_at)
+print(m2.created_at)
+
 exit(0)
 
 """
