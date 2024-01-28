@@ -2,10 +2,8 @@
 Global application config.
 """
 
-DATABASE_FILEPATH = '.database.db'
-CREATE_TABLES_SCRIPT = 'create_tables.sql'
-DROP_TABLES_SCRIPT = 'drop_tables.sql'
-
+TEST_DATA_FILEPATH = 'test_data/'
+DATA_FILEPATH = 'data/'
 MEMORIES_FILEPATH = 'sam-bot-memories.md'
 PERSONALITY_FILEPATH = 'sam-bot-personality.md'
 

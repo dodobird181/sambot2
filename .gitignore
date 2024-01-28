@@ -2,6 +2,8 @@
 .database.db
 .vscode
 env_secrets.py
+data/
+test_data/
 
 # Byte-compiled / optimized / DLL files
 __pycache__/

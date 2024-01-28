@@ -2,6 +2,7 @@ import abc
 from typing import *
 from collections import UserDict, UserList
 import uuid
+from datetime import datetime
 
 
 class Message(UserDict, abc.ABC):
@@ -16,6 +17,7 @@ class Message(UserDict, abc.ABC):
             'role': self.role(),
             'content': content,
         }
+        self.created_at = datetime.now()
 
     @abc.abstractmethod
     def role(self) -> str:

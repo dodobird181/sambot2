@@ -1,7 +1,14 @@
 import unittest
+import os
 
 from parameterized import parameterized_class, parameterized
 from conversation import *
+from persistance import save_conversation
+from config import TEST_DATA_FILEPATH
+
+
+if not os.path.exists(TEST_DATA_FILEPATH):
+    os.makedirs(TEST_DATA_FILEPATH)
 
 
 @parameterized_class(('message_class', 'expected_role'), [
@@ -9,9 +16,9 @@ from conversation import *
     (BotMessage, 'assistant'),
     (SystemMessage, 'system')
 ])
-class TestUserMessage(unittest.TestCase):
+class TestMessages(unittest.TestCase):
     """
-    Test suite for the `UserMessage` class.
+    Test suite for the `UserMessage`, `BotMessage`, and `SystemMessage` classes.
     """
 
     def get_other_message_class(self):
@@ -116,6 +123,34 @@ class TestConversation(unittest.TestCase):
         with self.assertRaisesRegex(TypeError, 'Expected UserMessage, got BotMessage.'):
             convo.append(BotMessage('dummy bot message'))
             convo.append(BotMessage('another bot message!'))
+
+
+class TestPersistance(unittest.TestCase):
+    """
+    Test suite for the persistance.py module.
+    """
+
+    def delete_app_data(self):
+        for filename in os.listdir(TEST_DATA_FILEPATH):
+            file_path = os.path.join(TEST_DATA_FILEPATH, filename)
+            try:
+                if os.path.isfile(file_path) or os.path.islink(file_path):
+                    os.remove(file_path)
+            except Exception as e:
+                print('Failed to delete %s. Reason: %s' % (file_path, e))
+
+    def setUp(self):
+        self.delete_app_data()
+        self.addCleanup(self.delete_app_data)
+
+    def test_save_conversation(self):
+        # TODO: make this not a meta test but a real test...
+        convo = Conversation(system=SystemMessage('dummy system message'))
+        convo.append(UserMessage('dummy user message'))
+        convo.append(BotMessage('dummy bot message'))
+        save_conversation(convo, path=TEST_DATA_FILEPATH)
+        datafiles = os.listdir(TEST_DATA_FILEPATH)
+
 
 
 if __name__ == '__main__':
