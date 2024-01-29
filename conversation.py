@@ -58,7 +58,7 @@ class SystemMessage(Message):
 class Conversation(UserList):
     """
     A mutable conversation composed of 1 or more messages. Contains
-    persistance methods for saving data across user-sessions.
+    persistence methods for saving data across user-sessions.
     """
 
     def __init__(self, system: SystemMessage, id: uuid=uuid.uuid4()):

@@ -3,7 +3,7 @@ import os
 
 from parameterized import parameterized_class, parameterized
 from conversation import *
-from persistance import load_convo, save_convo
+from persistence import load_convo, save_convo
 from config import TEST_DATA_FILEPATH
 from msgspec.json import encode
 
@@ -126,9 +126,9 @@ class TestConversation(unittest.TestCase):
             convo.append(BotMessage('another bot message!'))
 
 
-class TestPersistance(unittest.TestCase):
+class TestPersistence(unittest.TestCase):
     """
-    Test suite for the persistance.py module.
+    Test suite for the persistence.py module.
     """
 
     def delete_app_data(self):
