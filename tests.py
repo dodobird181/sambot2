@@ -3,7 +3,7 @@ import os
 
 from parameterized import parameterized_class, parameterized
 from conversation import *
-from persistance import load_conversation, save_conversation
+from persistance import load_convo, save_convo
 from config import TEST_DATA_FILEPATH
 from msgspec.json import encode
 
@@ -148,7 +148,7 @@ class TestPersistance(unittest.TestCase):
         convo = Conversation(system=SystemMessage('dummy system message'))
         convo.append(UserMessage('dummy user message'))
         convo.append(BotMessage('dummy bot message'))
-        save_conversation(convo, path=TEST_DATA_FILEPATH)
+        save_convo(convo, path=TEST_DATA_FILEPATH)
         datafiles = os.listdir(TEST_DATA_FILEPATH)
         self.assertEqual(1, len(datafiles), 'A single datafile exists.')
         self.assertEqual(f'{str(convo.id)}.json', datafiles[0], 'The datafile name is convo id.')
@@ -175,7 +175,7 @@ class TestPersistance(unittest.TestCase):
                         "created_at": "2024-01-28T00:12:10.106643"
                     }
                 ]}))
-        convo = load_conversation(id, path=TEST_DATA_FILEPATH)
+        convo = load_convo(id, path=TEST_DATA_FILEPATH)
         self.assertListEqual(list(convo), [
             {'role': 'system', 'content': 'dummy system message'},
             {'role': 'user', 'content': 'dummy user message'},
@@ -185,8 +185,9 @@ class TestPersistance(unittest.TestCase):
         self.assertEqual(convo[1].created_at, datetime.fromisoformat('2024-01-28T00:12:10.106642'))
         self.assertEqual(convo[2].created_at, datetime.fromisoformat('2024-01-28T00:12:10.106643'))
 
-
-
+    def test_load_conversation_fails(self):
+        with self.assertRaises(FileNotFoundError):
+            load_convo('not_a_real_id', path=TEST_DATA_FILEPATH)
 
 
 if __name__ == '__main__':

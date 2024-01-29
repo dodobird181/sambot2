@@ -4,14 +4,7 @@ from msgspec import DecodeError
 from datetime import datetime
 from config import DATA_FILEPATH
 import os
-from app import app
 
-
-"""
-TODO: Finish this file by creating tools for encoding and decoding `Conversation` objects
-to and from json + tools for saving and loading json files locally. Should add config for database
-location / json file location and remove old variables.
-"""
 
 if not os.path.exists(DATA_FILEPATH):
     os.makedirs(DATA_FILEPATH)
@@ -28,7 +21,7 @@ class Conversation(Struct):
     messages: list[Message]
 
 
-def save_conversation(app_conversation, path=DATA_FILEPATH) -> None:
+def save_convo(app_conversation, path=DATA_FILEPATH) -> None:
     """
     Save an app conversation to a json file.
     """
@@ -46,9 +39,9 @@ def save_conversation(app_conversation, path=DATA_FILEPATH) -> None:
         file.write(json_string)
 
 
-def load_conversation(id: str, path=DATA_FILEPATH):
+def load_convo(id: str, path=DATA_FILEPATH):
     """
-    Load an app conversation from its id. TODO: this methid is a little
+    Load an app conversation from its id. TODO: this method is a little
     lengthy and uses delayed imports. See if you can't fix this...
     """
     with open(f'{path}{id}.json', 'r') as file:
