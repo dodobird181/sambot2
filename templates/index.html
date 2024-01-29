@@ -1,0 +1,23 @@
+<!-- templates/index.html -->
+<!DOCTYPE html>
+<html>
+<head>
+    <title>HTML Streaming Example</title>
+</head>
+<body>
+    <h1>Streaming HTML Content</h1>
+    <div id="stream-container"></div>
+
+    <script>
+        console.log('Loading script...');
+        const eventSource = new EventSource('/stream');
+        const container = document.getElementById('stream-container');
+
+        eventSource.onmessage = function(event) {
+            console.log(event);
+            // Append received HTML content to the container
+            container.innerHTML += event.data;
+        };
+    </script>
+</body>
+</html>
