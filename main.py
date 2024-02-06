@@ -5,7 +5,7 @@ from conversation import Message, SystemMessage, UserMessage, BotMessage, Conver
 convo = Conversation(SystemMessage('You are a helpful assistant named Dave.'))
 convo.append(UserMessage('Hi, what is your name? Who are you? Where am i?'))
 
-for token in gpt.stream(convo):
+for token in gpt.chat_stream(convo):
     print(token, end='')
 
 exit(0)
