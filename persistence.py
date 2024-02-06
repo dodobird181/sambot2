@@ -1,10 +1,10 @@
-from msgspec.json import decode, encode
-from msgspec import Struct
-from msgspec import DecodeError
-from datetime import datetime
-from config import DATA_FILEPATH
 import os
+from datetime import datetime
 
+from msgspec import DecodeError, Struct
+from msgspec.json import decode, encode
+
+from config import DATA_FILEPATH
 
 if not os.path.exists(DATA_FILEPATH):
     os.makedirs(DATA_FILEPATH)
@@ -50,8 +50,9 @@ def load_convo(id: str, path=DATA_FILEPATH):
     with open(f"{path}{id}.json", "r") as file:
         conversation = decode(file.read(), type=Conversation)
 
+    from conversation import BotMessage
     from conversation import Conversation as AppConversation
-    from conversation import SystemMessage, UserMessage, BotMessage
+    from conversation import SystemMessage, UserMessage
 
     json_system = conversation.messages[0]
     system = SystemMessage(

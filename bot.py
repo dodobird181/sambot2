@@ -1,14 +1,18 @@
+from typing import Generator, Optional
+
 from flask.wrappers import Request
-from conversation import Conversation, SystemMessage, UserMessage, BotMessage
-from persistence import load_convo, save_convo
-from typing import Optional, Generator
+
 import gpt
+from conversation import BotMessage, Conversation, SystemMessage, UserMessage
+from persistence import load_convo, save_convo
 
 
 class Sambot:
 
     def stream_convo(
-        self, user_content, convo_id=None
+        self,
+        user_content,
+        convo_id=None,
     ) -> Generator[Conversation, None, None]:
         """
         Stream a partially updating conversation object back to the caller. A `UserMessage`

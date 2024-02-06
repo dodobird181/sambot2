@@ -1,6 +1,6 @@
 import config
 import gpt
-from conversation import SystemMessage, UserMessage, BotMessage, Conversation
+from conversation import BotMessage, Conversation, SystemMessage, UserMessage
 from templating import render_jinja2
 
 convo = Conversation(SystemMessage("You are a helpful assistant named Dave."))

@@ -1,8 +1,10 @@
+from __future__ import annotations
+
 import abc
-from typing import *
-from collections import UserDict, UserList
 import uuid
+from collections import UserDict, UserList
 from datetime import datetime
+from typing import *
 
 
 class Message(UserDict, abc.ABC):
@@ -71,6 +73,9 @@ class Conversation(UserList):
     persistence methods for saving data across user-sessions.
     """
 
+    @classmethod
+    def make_empty(cls) -> Conversation: ...
+
     def __init__(self, system: SystemMessage, id: uuid = uuid.uuid4()):
         super().__init__([system])
         self.id = id
@@ -129,3 +134,6 @@ class Conversation(UserList):
                 f"Cannot update conversation with {item}, expected {latest_type}."
             )
         self[len(self) - 1] = item
+
+
+EmptyConversation = Conversation(SystemMessage.EMPTY)

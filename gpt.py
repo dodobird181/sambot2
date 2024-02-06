@@ -1,7 +1,8 @@
-import config
-import openai
 from typing import *
 
+import openai
+
+import config
 
 client = openai.OpenAI(api_key=config.OPENAI_API_KEY)
 

@@ -2,9 +2,11 @@
 Module for rendering more complicated HTML templates using jinja2.
 """
 
-from config import TEMPLATES_FILEPATH
+from typing import Any, Dict
+
 from jinja2 import Environment, FileSystemLoader
-from typing import Dict, Any
+
+from config import TEMPLATES_FILEPATH
 
 
 def render_jinja2(template_name: str, data: Dict[str, Any]) -> str:
