@@ -1,6 +1,7 @@
 """
 Module for rendering more complicated HTML templates using jinja2.
 """
+
 from config import TEMPLATES_FILEPATH
 from jinja2 import Environment, FileSystemLoader
 from typing import Dict, Any

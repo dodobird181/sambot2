@@ -20,7 +20,7 @@
                         var user_content = encodeURIComponent(inputBox.value);
 
                         // Do something with the text, e.g., log it to the console
-                        const eventSource = new EventSource('/stream?user_content=' + user_content);
+                        const eventSource = new EventSource('/stream?user_contdent=' + user_content);
                         const container = document.getElementById('stream-container');
                         eventSource.onmessage = function(event) {
                             if (event.data === 'STOP'){
