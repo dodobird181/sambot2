@@ -5,6 +5,25 @@ from typing import Optional, Generator
 import gpt
 
 
+class Sambot:
+
+    def stream_convo(
+        self, user_content, convo_id=None
+    ) -> Generator[Conversation, None, None]:
+        """
+        Stream a partially updating conversation object back to the caller. A `UserMessage`
+        containing the given `user_content` will be appended to the conversation first. Then,
+        a `BotMessage` will be appended and slowly updated as data from ChatGPT is streamed
+        back from their API.
+        """
+        if not convo_id:
+            convo = Conversation(SystemMessage.EMPTY)
+
+    def _get_convo(convo_id) -> Conversation:
+        """
+        Load the conversation using the given `convo_id`, or create a new conversation
+        """
+
 
 class Bot:
     """
@@ -28,16 +47,20 @@ class Bot:
         """
         Extract relevant information from the given `user_content` and return a string.
         """
-        convo = Conversation(system=SystemMessage('You are a helpful assistant.'))
-        convo.append(UserMessage(f'''
+        convo = Conversation(system=SystemMessage("You are a helpful assistant."))
+        convo.append(
+            UserMessage(
+                f"""
             Please extract and summarize using bullet points any relevant information in: "{bot_memories}"
             to answer the following user quesiton: "{user_prompt}". Respond with only a bullet-point saying
             there is no information if no relevant information exists to answer the question, or if the question
             seems unintelligable.
-        '''))
+        """
+            )
+        )
         gpt.chat(
             conversation=convo,
-            model='gpt-3.5-turbo',
+            model="gpt-3.5-turbo",
         )
 
     def get_convo(self) -> Optional[Conversation]:
@@ -55,10 +78,11 @@ class Knowledge(str):
     String representation of what information the bot knows
     about how to answer a given piece of user content.
     """
+
     def __init__(self, user_content: str):
-        f'''
+        f"""
             Please extract and summarize using bullet points any relevant information in: "{bot_memories}"
             to answer the following user quesiton: "{user_prompt}". Respond with only a bullet-point saying
             there is no information if no relevant information exists to answer the question, or if the question
             seems unintelligable.
-        '''
+        """

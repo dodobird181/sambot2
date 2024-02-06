@@ -11,11 +11,11 @@ class Message(UserDict, abc.ABC):
     the ChatGPT API expects messages to be in a dictionary format.
     """
 
-    def __init__(self, content: str, created_at: datetime=None):
+    def __init__(self, content: str, created_at: datetime = None):
         super().__init__()
         self |= {
-            'role': self.role(),
-            'content': content,
+            "role": self.role(),
+            "content": content,
         }
         self.created_at = created_at if created_at else datetime.now()
 
@@ -34,7 +34,7 @@ class UserMessage(Message):
 
     @classmethod
     def role(cls) -> str:
-        return 'user'
+        return "user"
 
 
 class BotMessage(Message):
@@ -44,7 +44,7 @@ class BotMessage(Message):
 
     def role(self) -> str:
         # assistant is expected by the GPT api
-        return 'assistant'
+        return "assistant"
 
 
 class SystemMessage(Message):
@@ -53,7 +53,16 @@ class SystemMessage(Message):
     """
 
     def role(self) -> str:
-        return 'system'
+        return "system"
+
+    @property
+    @classmethod
+    def EMPTY(cls):
+        """
+        System message placeholder. Used for initializing conversations before
+        an bot response is generated and appended to the end of the conversation.
+        """
+        return cls("")
 
 
 class Conversation(UserList):
@@ -62,7 +71,7 @@ class Conversation(UserList):
     persistence methods for saving data across user-sessions.
     """
 
-    def __init__(self, system: SystemMessage, id: uuid=uuid.uuid4()):
+    def __init__(self, system: SystemMessage, id: uuid = uuid.uuid4()):
         super().__init__([system])
         self.id = id
 
@@ -83,24 +92,30 @@ class Conversation(UserList):
             message = self[i]
             if isinstance(message, message_class):
                 return message
-        raise StopIteration(f'No instance of {message_class} in {self}.')
+        raise StopIteration(f"No instance of {message_class} in {self}.")
 
     def append(self, item) -> None:
         """
         Append a message onto the end of this conversation.
         """
         if not isinstance(item, Message):
-            raise TypeError('Conversation item must be a Message.')
+            raise TypeError("Conversation item must be a Message.")
 
         if isinstance(item, SystemMessage):
-            raise TypeError('Append does not support SystemMessage. Use set_system instead.')
+            raise TypeError(
+                "Append does not support SystemMessage. Use set_system instead."
+            )
 
         latest_msg = self.latest
         if isinstance(item, UserMessage) and isinstance(latest_msg, UserMessage):
-            raise TypeError('Message out of turn. Expected BotMessage, got UserMessage.')
+            raise TypeError(
+                "Message out of turn. Expected BotMessage, got UserMessage."
+            )
 
         if isinstance(item, BotMessage) and isinstance(latest_msg, BotMessage):
-            raise TypeError('Message out of turn. Expected UserMessage, got BotMessage.')
+            raise TypeError(
+                "Message out of turn. Expected UserMessage, got BotMessage."
+            )
 
         super().append(item)
 
@@ -110,5 +125,7 @@ class Conversation(UserList):
         """
         latest_type = type(self.latest)
         if not isinstance(item, latest_type):
-            raise TypeError(f'Cannot update conversation with {item}, expected {latest_type}.')
+            raise TypeError(
+                f"Cannot update conversation with {item}, expected {latest_type}."
+            )
         self[len(self) - 1] = item
