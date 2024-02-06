@@ -71,7 +71,8 @@ class Conversation(UserList):
         """
         self[0] = system
 
-    def latest_message(self, message_class=Message) -> Message:
+    @property
+    def latest(self, message_class=Message) -> Message:
         """
         Get the latest message in this conversation, where `message_class`
         is an optional parameter denoting the type of message you wish to retrieve.
@@ -93,7 +94,7 @@ class Conversation(UserList):
         if isinstance(item, SystemMessage):
             raise TypeError('Append does not support SystemMessage. Use set_system instead.')
 
-        latest_msg = self.latest_message()
+        latest_msg = self.latest
         if isinstance(item, UserMessage) and isinstance(latest_msg, UserMessage):
             raise TypeError('Message out of turn. Expected BotMessage, got UserMessage.')
 
