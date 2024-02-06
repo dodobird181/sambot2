@@ -2,6 +2,7 @@
 Global application config.
 """
 
+TEMPLATES_FILEPATH = 'templates'
 TEST_DATA_FILEPATH = 'test_data/'
 DATA_FILEPATH = 'data/'
 MEMORIES_FILEPATH = 'sam-bot-memories.md'
