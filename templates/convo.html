@@ -1,0 +1,7 @@
+<ul>
+    {% for message in convo %}
+        {% if message.role() != "system" %}
+            <li class="{{ message.role() }}">{{ message.content }}</li>
+        {% endif %}
+    {% endfor %}
+</ul>

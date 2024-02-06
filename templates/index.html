@@ -13,7 +13,7 @@
                 if (event.data === 'STOP'){
                     eventSource.close();
                 } else {
-                    container.innerHTML += event.data;
+                    container.innerHTML = event.data;
                 }
             };
         </script>
