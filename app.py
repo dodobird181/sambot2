@@ -3,13 +3,14 @@ import time
 
 app = Flask(__name__)
 
-@app.route('/chat', methods=['POST'])
-def process_message():
+@app.route('/stream_response', methods=['POST'])
+def stream_response():
+
     content = request.json.get('content')
-    conversation_id = request.json.get('conversation_id', 'default_id')  # Default value if not provided
+    conversation_id = request.json.get('conversation_id', 'default_id')
 
     if not content:
-        return jsonify({"error": "Content is required"}), 400
+        return jsonify({"error": "content is required"}), 400
 
     # Process the content and conversation_id here
     # For example, just returning them
@@ -23,8 +24,10 @@ def process_message():
 def stream_html():
     def generate_html():
         for i in range(1, 6):  # Example: 5 chunks of HTML content
-            yield f"<div><p>Chunk {i} of HTML content</p></div>"
+            #yield f"<div><p>Chunk {i} of HTML content</p></div>"
+            yield f"data: <div><h3>Chunk {i} of HTML content</h3></div>\n\n"
             time.sleep(1)  # Simulate delay
+        yield f'data: STOP\n\n'
 
     return Response(stream_with_context(generate_html()), mimetype='text/event-stream')
 
