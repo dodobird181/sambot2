@@ -32,7 +32,8 @@ class UserMessage(Message):
     A message sent by a USER.
     """
 
-    def role(self) -> str:
+    @classmethod
+    def role(cls) -> str:
         return 'user'
 
 
@@ -67,7 +68,7 @@ class Conversation(UserList):
 
     def set_system(self, system: SystemMessage):
         """
-        Set the system message.
+        Set the system message. TODO: This will be deprecated by the more general function: update_latest...
         """
         self[0] = system
 
@@ -82,7 +83,7 @@ class Conversation(UserList):
             message = self[i]
             if isinstance(message, message_class):
                 return message
-        raise StopIteration  # shouldn't happen unless list data tampered with...
+        raise StopIteration(f'No instance of {message_class} in {self}.')
 
     def append(self, item) -> None:
         """
@@ -102,3 +103,12 @@ class Conversation(UserList):
             raise TypeError('Message out of turn. Expected UserMessage, got BotMessage.')
 
         super().append(item)
+
+    def update(self, item) -> None:
+        """
+        Update the latest message in this conversation.
+        """
+        latest_type = type(self.latest)
+        if not isinstance(item, latest_type):
+            raise TypeError(f'Cannot update conversation with {item}, expected {latest_type}.')
+        self[len(self) - 1] = item

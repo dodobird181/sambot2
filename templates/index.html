@@ -1,21 +1,40 @@
 <!DOCTYPE html>
 <html>
     <head>
-        <title>HTML Streaming Example</title>
+        <title>sam morris</title>
     </head>
     <body>
-        <h1>Streaming HTML Content</h1>
+        <h1>sam morris</h1>
         <div id="stream-container"></div>
+        <input type="text" id="input-box" placeholder="Type something and press Enter">
         <script>
-            const eventSource = new EventSource('/stream');
-            const container = document.getElementById('stream-container');
-            eventSource.onmessage = function(event) {
-                if (event.data === 'STOP'){
-                    eventSource.close();
-                } else {
-                    container.innerHTML = event.data;
-                }
-            };
+            document.addEventListener('DOMContentLoaded', function() {
+                var inputBox = document.getElementById('input-box');
+                inputBox.addEventListener('keypress', function(event) {
+                    // Check if the key pressed is the Enter key
+                    if (event.key === 'Enter') {
+                        // Prevent the default action to avoid submitting a form if the input is part of one
+                        event.preventDefault();
+
+                        // Grab the text and encode
+                        var user_content = encodeURIComponent(inputBox.value);
+
+                        // Do something with the text, e.g., log it to the console
+                        const eventSource = new EventSource('/stream?user_content=' + user_content);
+                        const container = document.getElementById('stream-container');
+                        eventSource.onmessage = function(event) {
+                            if (event.data === 'STOP'){
+                                eventSource.close();
+                            } else {
+                                container.innerHTML = event.data;
+                            }
+                        };
+
+                        // Clear the input box
+                        inputBox.value = '';
+                    }
+                });
+            });
         </script>
         <style>
             body{
