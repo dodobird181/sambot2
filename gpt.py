@@ -6,7 +6,7 @@ from typing import *
 client = openai.OpenAI(api_key=config.OPENAI_API_KEY)
 
 
-def chat_stream(conversation, model='gpt-4', **kwargs):
+def chat_stream(convo, model='gpt-4', **kwargs):
     """
     Send a chat request to OpenAI and stream back the response.
     This function returns a generator containing string-chunks,
@@ -14,7 +14,7 @@ def chat_stream(conversation, model='gpt-4', **kwargs):
     """
     for chunk in client.chat.completions.create(
         model=model,
-        messages=list(conversation),
+        messages=list(convo),
         stream=True,
         **kwargs,
     ):
@@ -22,13 +22,13 @@ def chat_stream(conversation, model='gpt-4', **kwargs):
             yield content
 
 
-def chat(conversation, model='gpt-4', **kwargs):
+def chat(convo, model='gpt-4', **kwargs):
     """
     Send a chat request to OpenAI and return a string response.
     """
     return client.chat.completions.create(
         model=model,
-        messages=list(conversation),
+        messages=list(convo),
         stream=False,
         **kwargs,
     ).choices[0].message.content
