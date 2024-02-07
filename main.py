@@ -1,24 +1,15 @@
 import config
 import gpt
+from bot import Sambot
 from conversation import BotMessage, Conversation, SystemMessage, UserMessage
 from templating import render_jinja2
 
-convo = Conversation(SystemMessage("You are a helpful assistant named Dave."))
-convo.append(UserMessage("Hi, what is your name? Who are you? Where am i?"))
-convo.append(BotMessage("Sup fuckface!"))
-print(convo)
-convo.update(
-    BotMessage(
-        "Actually, hello my good sir! Pardon my earlier language. I dont know what came over me!!"
-    )
-)
-print(convo)
-convo.update(BotMessage("NULL"))
-print(convo)
-convo.update(UserMessage("WILL NOT DISPLAY"))
-print(convo)
+for convo in Sambot().stream_convo(
+    user_content="eyyy dawg wassup!!",
+    convo=Conversation.create_empty(),
+):
+    ...
 
-print(render_jinja2("convo.html", {"convo": convo}))
 exit(0)
 
 for token in gpt.chat_stream(convo):

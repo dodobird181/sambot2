@@ -77,7 +77,7 @@ class Conversation(UserList):
 
     def set_system(self, system: SystemMessage):
         """
-        Set the system message. TODO: This will be deprecated by the more general function: update_latest...
+        Set the system message.
         """
         self[0] = system
 
@@ -129,6 +129,3 @@ class Conversation(UserList):
                 f"Cannot update conversation with {item}, expected {latest_type}."
             )
         self[len(self) - 1] = item
-
-
-EmptyConversation = Conversation(SystemMessage.EMPTY)

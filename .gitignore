@@ -4,7 +4,7 @@
 env_secrets.py
 data/
 test_data/
-watchdog.py
+start_dev.py
 
 # Byte-compiled / optimized / DLL files
 __pycache__/

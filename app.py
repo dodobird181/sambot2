@@ -10,7 +10,8 @@ from flask import (
     stream_with_context,
 )
 
-from config import CONVO_ID_SESSION_KEY, FLASK_SECRET_KEY
+from bot import Sambot
+from config import FLASK_SECRET_KEY
 from conversation import Message
 from templating import render_jinja2
 
@@ -20,50 +21,28 @@ app.secret_key = FLASK_SECRET_KEY
 
 @app.route("/stream")
 def stream_html():
-    def generate_html():
-        from conversation import BotMessage, Conversation, SystemMessage, UserMessage
-        from gpt import chat_stream
 
-        convo = Conversation(SystemMessage("You are a helpful assistant named Dave."))
-        convo.append(UserMessage(user_content))
-        convo.append(BotMessage(""))
-        partial_response = ""
-        for token in chat_stream(convo=convo):
-            partial_response += token
-            convo.update(
-                BotMessage(
-                    partial_response.replace("\n", " ").replace("\t", " ").lower()
-                )
-            )
-            data = render_jinja2("convo.html", {"convo": convo})
+    user_content = request.args.get("user_content", None)
+    if not user_content:
+        return Response("missing required parameter: user_content", status=400)
+
+    sambot = Sambot()
+    session_convo = sambot.load_session_convo()
+
+    def generate_html():
+        for convo in sambot.stream_convo(user_content, session_convo):
+            if isinstance(convo, str):
+                # pass-along arbitrary string as data for the client to interpret.
+                # this allows stream_convo to send intermediate messages to the
+                # client while the main data is also being streamed...
+                yield f"data: {convo}\n\n"
+            else:
+                # render convo to HTML and yield partial result
+                data = render_jinja2("convo.html", {"convo": convo})
             yield f"data: {data}\n\n"
         yield f"data: STOP\n\n"
 
     return Response(stream_with_context(generate_html()), mimetype="text/event-stream")
-
-
-"""
-@app.route('/stream')
-def stream_html():
-    def generate_html():
-        from conversation import Conversation, SystemMessage, UserMessage, BotMessage
-        from gpt import chat_stream
-        user_content = request.args.get('user_content', default=None, type=str)
-        if not user_content:
-            return 400, 'user_content required'
-        convo = Conversation(SystemMessage('You are a helpful assistant named Dave.'))
-        convo.append(UserMessage(user_content))
-        convo.append(BotMessage(''))
-        partial_response = ''
-        for token in chat_stream(convo=convo):
-            partial_response += token
-            convo.update(BotMessage(partial_response.replace("\n", " ").replace("\t", " ").lower()))
-            data = render_jinja2('convo.html', {'convo': convo})
-            yield f'data: {data}\n\n'
-        yield f'data: STOP\n\n'
-
-    return Response(stream_with_context(generate_html()), mimetype='text/event-stream')
-"""
 
 
 @app.route("/")

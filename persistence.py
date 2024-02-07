@@ -44,11 +44,18 @@ def save_convo(app_conversation, path=DATA_FILEPATH) -> None:
 
 def load_convo(id: str, path=DATA_FILEPATH):
     """
-    Load an app conversation from its id. TODO: this method is a little
+    Load an app conversation from its id, or return None if the file
+    cannot be found. TODO: this method is a little
     lengthy and uses delayed imports. See if you can't fix this...
     """
-    with open(f"{path}{id}.json", "r") as file:
-        conversation = decode(file.read(), type=Conversation)
+    try:
+        with open(f"{path}{id}.json", "r") as file:
+            conversation = decode(file.read(), type=Conversation)
+    except FileNotFoundError:
+        return None
+
+    def replace_non_ascii_with_space(s):
+        return "".join(c if ord(c) < 128 else " " for c in s)
 
     from conversation import BotMessage
     from conversation import Conversation as AppConversation
@@ -65,7 +72,10 @@ def load_convo(id: str, path=DATA_FILEPATH):
             raise DecodeError("System message in non-0th position.")
         msg_class = UserMessage if "user" == message.role else BotMessage
         app_conversation.append(
-            msg_class(content=message.content, created_at=message.created_at)
+            msg_class(
+                content=replace_non_ascii_with_space(message.content),
+                created_at=message.created_at,
+            )
         )
 
     return app_conversation

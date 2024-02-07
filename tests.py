@@ -182,28 +182,26 @@ class TestPersistence(unittest.TestCase):
         id = "test_conversation_id"
         with open(f"{TEST_DATA_FILEPATH}{id}.json", "wb") as file:
             file.write(
-                encode(
-                    {
-                        "id": id,
-                        "messages": [
-                            {
-                                "role": "system",
-                                "content": "dummy system message",
-                                "created_at": "2024-01-28T00:12:10.106641",
-                            },
-                            {
-                                "role": "user",
-                                "content": "dummy user message",
-                                "created_at": "2024-01-28T00:12:10.106642",
-                            },
-                            {
-                                "role": "assistant",
-                                "content": "dummy bot message",
-                                "created_at": "2024-01-28T00:12:10.106643",
-                            },
-                        ],
-                    }
-                )
+                encode({
+                    "id": id,
+                    "messages": [
+                        {
+                            "role": "system",
+                            "content": "dummy system message",
+                            "created_at": "2024-01-28T00:12:10.106641",
+                        },
+                        {
+                            "role": "user",
+                            "content": "dummy user message",
+                            "created_at": "2024-01-28T00:12:10.106642",
+                        },
+                        {
+                            "role": "assistant",
+                            "content": "dummy bot message",
+                            "created_at": "2024-01-28T00:12:10.106643",
+                        },
+                    ],
+                })
             )
         convo = load_convo(id, path=TEST_DATA_FILEPATH)
         self.assertListEqual(
