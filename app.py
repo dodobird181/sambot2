@@ -10,7 +10,7 @@ from flask import (
     stream_with_context,
 )
 
-from config import FLASK_SECRET_KEY
+from config import CONVO_ID_SESSION_KEY, FLASK_SECRET_KEY
 from conversation import Message
 from templating import render_jinja2
 

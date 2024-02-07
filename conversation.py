@@ -57,15 +57,6 @@ class SystemMessage(Message):
     def role(self) -> str:
         return "system"
 
-    @property
-    @classmethod
-    def EMPTY(cls):
-        """
-        System message placeholder. Used for initializing conversations before
-        an bot response is generated and appended to the end of the conversation.
-        """
-        return cls("")
-
 
 class Conversation(UserList):
     """
@@ -74,7 +65,11 @@ class Conversation(UserList):
     """
 
     @classmethod
-    def make_empty(cls) -> Conversation: ...
+    def create_empty(cls) -> Conversation:
+        """
+        Make an empty conversation.
+        """
+        return Conversation(SystemMessage(""))
 
     def __init__(self, system: SystemMessage, id: uuid = uuid.uuid4()):
         super().__init__([system])

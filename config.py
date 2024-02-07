@@ -2,6 +2,7 @@
 Global application config.
 """
 
+CONVO_ID_SESSION_KEY = "sambot_convo_id"
 TEMPLATES_FILEPATH = "templates"
 TEST_DATA_FILEPATH = "test_data/"
 DATA_FILEPATH = "data/"
