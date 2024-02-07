@@ -39,7 +39,7 @@ def stream_html():
             else:
                 # render convo to HTML and yield partial result
                 data = render_jinja2("convo.html", {"convo": convo})
-            yield f"data: {data}\n\n"
+                yield f"data: {data}\n\n"
         yield f"data: STOP\n\n"
 
     return Response(stream_with_context(generate_html()), mimetype="text/event-stream")

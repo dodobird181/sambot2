@@ -5,7 +5,7 @@
     </head>
     <body>
         <h1>sam morris</h1>
-        <div id="stream-container"></div>
+        <div><ul id="stream-container"></ul></div>
         <input type="text" id="input-box" placeholder="Type something and press Enter">
         <script>
             document.addEventListener('DOMContentLoaded', function() {
@@ -29,9 +29,7 @@
                                 eventSource.close();
                                 inputBox.removeAttribute('disabled');
                             } else if (event.data === 'START ELLIPSIS'){
-                                console.log('starting ellipsis...');
                                 container.innerHTML += '<li id="ellipsis" class="assistant"></li>'
-                                container.innerHTML += "WADLKNAWDLKNAWD"
                                 const ellipsisElement = document.getElementById('ellipsis');
                                 let dots = 0;
                                 setInterval(() => {

@@ -95,7 +95,6 @@ class Sambot:
 
         # yield user message immediately.
         convo.append(UserMessage(user_content))
-        convo.append(BotMessage(""))
         yield convo
 
         # let client know it can start ellipsis animation.
@@ -110,6 +109,11 @@ class Sambot:
         for token in gpt.chat_stream(convo):
             partial_response += token
             partial_response = self._format_response(partial_response)
+            if isinstance(convo.latest, UserMessage):
+                # append the initial bot message. this is done here because i
+                # want the smallest possible delay between when the ellipsis
+                # animation stops and GPT starts streaming!.
+                convo.append(BotMessage(""))
             convo.update(BotMessage(partial_response))
             yield convo
 
