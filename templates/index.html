@@ -2,57 +2,25 @@
 <html>
     <head>
         <title>sam morris</title>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <script src="static/index.js" defer></script>
     </head>
     <body>
         <h1>sam morris</h1>
         <div><ul id="stream-container"></ul></div>
         <input type="text" id="input-box" placeholder="Type something and press Enter">
-        <script>
-            document.addEventListener('DOMContentLoaded', function() {
-                var inputBox = document.getElementById('input-box');
-                inputBox.addEventListener('keypress', function(event) {
-                    // Check if the key pressed is the Enter key
-                    if (event.key === 'Enter') {
-                        // Prevent the default action to avoid submitting a form if the input is part of one
-                        event.preventDefault();
-
-                        inputBox.setAttribute('disabled', 'true');
-
-                        // Grab the text and encode
-                        var user_content = encodeURIComponent(inputBox.value);
-
-                        // Do something with the text, e.g., log it to the console
-                        const eventSource = new EventSource('/stream?user_content=' + user_content);
-                        const container = document.getElementById('stream-container');
-                        eventSource.onmessage = function(event) {
-                            if (event.data === 'STOP'){
-                                eventSource.close();
-                                inputBox.removeAttribute('disabled');
-                            } else if (event.data === 'START ELLIPSIS'){
-                                container.innerHTML += '<li id="ellipsis" class="assistant"></li>'
-                                const ellipsisElement = document.getElementById('ellipsis');
-                                let dots = 0;
-                                setInterval(() => {
-                                    dots = (dots + 1) % 4;
-                                    ellipsisElement.textContent = '.'.repeat(dots);
-                                }, 500);
-                            }
-                            else {
-                                container.innerHTML = event.data;
-                            }
-                        };
-
-                        // Clear the input box
-                        inputBox.value = '';
-                    }
-                });
-            });
-        </script>
         <style>
             body{
                 font-family: 'Inter', sans-serif;
                 font-weight: normal;
                 font-style: normal;
+            }
+            ul {
+                max-height: 300px; /* 38.197% Adjust the max-height as needed */
+                overflow-y: auto; /* Makes the list scrollable vertically if it exceeds max-height */
+                padding: 10px;
+                list-style-type: none; /* Removes the bullet points */
             }
         </style>
     </body>
