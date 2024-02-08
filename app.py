@@ -4,6 +4,7 @@ from flask import (
     Flask,
     Response,
     jsonify,
+    make_response,
     render_template,
     request,
     session,
@@ -30,7 +31,7 @@ def stream_html():
     session_convo = sambot.load_session_convo()
 
     def generate_html():
-        for convo in sambot.stream_convo(user_content, session_convo):
+        for convo in sambot.dummy_stream(user_content, session_convo):
             if isinstance(convo, str):
                 # pass-along arbitrary string as data for the client to interpret.
                 # this allows stream_convo to send intermediate messages to the
@@ -43,6 +44,18 @@ def stream_html():
         yield f"data: STOP\n\n"
 
     return Response(stream_with_context(generate_html()), mimetype="text/event-stream")
+
+
+@app.route("/checkin", methods=["GET"])
+def checkin():
+    """
+    Initial web-page check-in. Returns an existing convo, or creates a new one.
+    """
+    convo = Sambot().load_session_convo()
+    html_content = render_jinja2("convo.html", {"convo": convo})
+    response = make_response(html_content, 200)
+    response.headers["Content-Type"] = "text/html"
+    return response
 
 
 @app.route("/")
