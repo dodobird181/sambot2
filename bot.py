@@ -81,6 +81,32 @@ class Sambot:
         to the real conversation + save and return that one. Jeez! A little complicated!
         """
 
+    def dummy_stream(
+        self,
+        user_content: str,
+        convo: Conversation,
+    ) -> Generator[Conversation | str, None, None]:
+        dummy_text = """Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed non risus.
+            Suspendisse lectus tortor, dignissim sit amet, adipiscing nec, ultricies sed, dolor. Cras
+            elementum ultrices diam. Maecenas ligula massa, varius a, semper congue, euismod non, mi.
+            Proin porttitor, orci nec nonummy molestie, enim est eleifend mi, non fermentum diam nisl
+            sit amet erat. Duis semper. Duis arcu massa, scelerisque vitae, consequat in, pretium a,
+            enim. Pellentesque congue.
+        """
+        convo.append(UserMessage(user_content))
+        yield convo
+        yield "START ELLIPSIS"
+        time.sleep(2)
+        partial_message = ""
+        for token in dummy_text.split(" "):
+            partial_message += token + " "
+            if isinstance(convo.latest, UserMessage):
+                convo.append(BotMessage(""))
+            convo.update(BotMessage(partial_message))
+            yield convo
+            time.sleep(0.01)
+        db.save_convo(convo)
+
     def stream_convo(
         self,
         user_content: str,
