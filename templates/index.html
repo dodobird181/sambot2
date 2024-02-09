@@ -5,23 +5,14 @@
         <meta charset="UTF-8">
         <meta name="viewport" content="width=device-width, initial-scale=1.0">
         <script src="static/index.js" defer></script>
+        <link rel="stylesheet" href="static/index.css"/>
     </head>
     <body>
-        <h1>sam morris</h1>
-        <div><ul id="stream-container"></ul></div>
-        <input type="text" id="input-box" placeholder="Type something and press Enter">
-        <style>
-            body{
-                font-family: 'Inter', sans-serif;
-                font-weight: normal;
-                font-style: normal;
-            }
-            ul {
-                max-height: 300px; /* 38.197% Adjust the max-height as needed */
-                overflow-y: auto; /* Makes the list scrollable vertically if it exceeds max-height */
-                padding: 10px;
-                list-style-type: none; /* Removes the bullet points */
-            }
-        </style>
+        <div class="centered-container">
+            <h1 class="header">hi, i'm sam morris</h1>
+            <div><ul class="ordered-list" id="stream-container"></ul></div>
+            <div class="gradient-overlay"></div>
+            <input class='input-box' type="text" id="input-box" placeholder="ask me anything">
+        </div>
     </body>
 </html>
