@@ -1,70 +1,137 @@
 
-// load old conversation on page load, if one exists!
-const container = document.getElementById('stream-container');
-fetch('/checkin', {method: 'GET'})
-.then(response => {
-    if (!response.ok) {
-        throw new Error('Network response was not ok');
-    }
-    // or response.json() if the API returns JSON
-    return response.text();
-})
-.then(data => {
-    container.innerHTML = data;
-})
-.catch(error => {
-    console.error('There was a problem with your fetch operation:', error);
-});
+let chatContainer = null;
+let userInputBox = null;
 
-document.addEventListener('DOMContentLoaded', function() {
-    var inputBox = document.getElementById('input-box');
-    inputBox.addEventListener('keypress', function(event) {
-        // Check if the key pressed is the Enter key
-        if (event.key === 'Enter') {
-            // Prevent the default action to avoid submitting a form if the input is part of one
-            event.preventDefault();
 
-            // TODO: All of this is DOGWATER... shouldn't actually post this up long-term
-            // without separating out the JS and CCSS into their own files like a normal human.
+// TODO: fix HTML flicker on refresh!
 
-            inputBox.setAttribute('disabled', 'true');
-            let ellipsisInterval = null;
+/**
+ * Stuff to happen after the DOM fully-loads.
+ */
+const onDomLoad = () => {
+    chatContainer = document.getElementById('stream-container');
+    userInputBox = document.getElementById('input-box');
+    userInputBox.addEventListener('keypress', onKeyPress);
+    loadMessages(chatContainer)
+        .then(_ => document.body.style.display = "block")
+        .then(_ => scrollDown())
+        .then(_ => {
+            if (0 == numChatMessages()){
+                //stream("Hi, this is NOT the user speaking, but rather an automated message " +
+                //"being sent to you at the start of a new conversation with someone. Please respond with an " +
+                //"informal greeting and a very brief explination of who you are and what this website is.");
+            }
+        });
+};
 
-            // Grab the text and encode
-            var user_content = encodeURIComponent(inputBox.value);
-            inputBox.value = '';
+/**
+ * Return the number of chat messages in the ordered list.
+ */
+const numChatMessages = () => {
+    return chatContainer.querySelectorAll('li').length;
+};
 
-            // scroll to bottom and lock scrolling until response is finished
-            const container = document.getElementById('stream-container');
-            container.scrollTop = container.scrollHeight;
-            document.body.style.overflowY = '';
+/**
+ * Load Sambot messages into a DOM element. Messages are represented by <li> tags.
+ * @param {*} container the DOM element to load HTML messages into.
+ */
+const loadMessages = (container) => {
+    return fetch('/checkin', {method: 'GET'})
+    .then(response => response.text())
+    .then(htmlText => container.innerHTML = htmlText)
+    .catch(error => console.error('Failed to load messages.', error));
+};
 
-            // Do something with the text, e.g., log it to the console
-            const eventSource = new EventSource('/stream?user_content=' + user_content);
-            eventSource.onmessage = function(event) {
-                if (event.data === 'STOP'){
-                    eventSource.close();
-                    inputBox.removeAttribute('disabled');
-                    document.body.style.overflowY = 'auto';
-                }
+/**
+ * Disable a DOM element.
+ */
+const disableElement = (element) => {
+    element.setAttribute('disabled', 'true');
+};
 
-                else if (event.data === 'START ELLIPSIS'){
-                    container.innerHTML += '<li id="ellipsis" class="assistant"></li>'
-                    const ellipsisElement = document.getElementById('ellipsis');
-                    let dots = 0;
-                    let ellipsisInterval = setInterval(() => {
-                        dots = (dots + 1) % 4;
-                        ellipsisElement.textContent = '.'.repeat(dots) + '\u200B';
-                        container.scrollTop = container.scrollHeight;
-                    }, 500);
-                }
+/**
+ * Enable a DOM element.
+ */
+const enableElement = (element) => {
+    element.removeAttribute('disabled');
+};
 
-                else {
-                    clearInterval(ellipsisInterval);
-                    container.innerHTML = event.data;
-                    container.scrollTop = container.scrollHeight;
-                }
-            };
+/**
+ * Get text from the user input box and clear it afterwards.
+ */
+const consumeUserInput = () => {
+    const input = encodeURIComponent(userInputBox.value);
+    userInputBox.value = '';
+    return input;
+};
+
+/**
+ * Scroll to the bottom of the messages display.
+ */
+const scrollDown = () => {
+    chatContainer.scrollTop = chatContainer.scrollHeight;
+};
+
+/**
+ * Disable scrolling on chat container.
+ */
+const disableChatScrolling = () => {
+    chatContainer.style.overflowY = 'hidden'
+};
+
+/**
+ * Enable scrolling on chat container.
+ */
+const enableChatScrolling = () => {
+    chatContainer.style.overflowY = ''
+};
+
+/**
+ * Start the ellipsis animation at the bottom of the chat container.
+ * This will be automatically overridden when sambot starts streaming data.
+ */
+const startEllipsisAnim = () => {
+    chatContainer.innerHTML += '<li id="ellipsis" class="assistant"></li>'
+    const ellipsisElement = document.getElementById('ellipsis');
+    let dots = 0;
+    return setInterval(() => {
+        dots = (dots + 1) % 4;
+        ellipsisElement.textContent = '.'.repeat(dots) + '\u200B';
+        scrollDown();
+    }, 500);
+};
+
+const streamMessageData = (stream) => {
+    let ellipsisInterval = null; // populated by startEllipsisAnim()
+    disableElement(userInputBox);
+    disableChatScrolling();
+    stream.onmessage = (event) => {
+        if (event.data === 'STOP'){
+            stream.close();
+            enableElement(userInputBox);
+            enableChatScrolling();
+            userInputBox.focus();
+        } else if (event.data === 'START ELLIPSIS'){
+            ellipsisInterval = startEllipsisAnim();
+        } else {
+            clearInterval(ellipsisInterval);
+            chatContainer.innerHTML = event.data;
+            scrollDown();
         }
-    });
-});
+    };
+};
+
+/**
+ * Handle global (docuent-level) keypress events.
+ */
+const onKeyPress = (keyPressEvent) => {
+    if (keyPressEvent.key === 'Enter') {
+        keyPressEvent.preventDefault(); // prevent default form-submission behaviour
+        const userInput = consumeUserInput();
+        const sambotStream = new EventSource('/stream?user_content=' + userInput);
+        streamMessageData(sambotStream);
+    }
+};
+
+// Listen for when the DOM has fully-loaded.
+document.addEventListener('DOMContentLoaded', onDomLoad);
