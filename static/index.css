@@ -1,0 +1,71 @@
+body{
+    display: none; /* Changed in JS after messages are loaded. */
+    font-family: 'Inter', sans-serif;
+    font-weight: normal;
+    font-style: normal;
+    font-size: 16px;
+    color: rgb(255, 243, 216);
+    background-color: #344E41;
+    margin: auto;
+    text-transform: lowercase;
+}
+ul {
+    max-height: 300px; /* 38.197% Adjust the max-height as needed */
+    overflow-y: auto; /* Makes the list scrollable vertically if it exceeds max-height */
+    padding: 0px;
+    list-style-type: none; /* Removes the bullet points */
+}
+.input-box, .ordered-list {
+    width: 100%; /* Makes them take the full width of the container */
+}
+.centered-container {
+    width: 38.197%; /* Set your desired width in pixels */
+    margin: 0 auto; /* This centers the container */
+    text-align: left; /* Ensures text inside is aligned to the left */
+}
+.header{
+    padding-top: 20%;
+}
+.ordered-list{
+    padding-top: 15px;
+    padding-bottom: 15px;
+}
+.input-box {
+    outline: none; /* Removes the default focus outline */
+    border: none; /* Optionally, removes the border if you set one */
+    color: rgb(255, 243, 216);
+    background-color: #344E41;
+    font-weight: normal;
+    font-style: normal;
+    font-size: 16px;
+    text-align: right;
+}
+.input-box::placeholder {
+    color: rgb(255, 243, 216);
+    opacity: 0.5; /* Optional: Adjust the opacity of the placeholder text */
+}
+.user{
+    text-align: right;
+
+}
+.assistant{
+    padding-top: 10px;
+    padding-bottom: 10px;
+}
+.ordered-list::-webkit-scrollbar {
+    background: transparent; /* Make scrollbar background transparent */
+    width: 0px; /* Reduce scrollbar width to 0 */
+}
+.gradient-overlay {
+    display: none; /* Disable for now */
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 30%;
+    margin-top: 175px;
+    margin-left: 30.9015%;
+    width: 38.197%;
+    pointer-events: none; /* Allows interaction with the list items */
+    background: linear-gradient(to bottom, rgba(52, 78, 65,1) 0%, rgba(255,255,255,0) 50%, rgba(255,255,255,0) 100%);
+}
