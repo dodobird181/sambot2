@@ -1,13 +1,11 @@
-from typing import Any, Dict, List
-
 from flask import (
     Flask,
     Response,
+    abort,
     jsonify,
     make_response,
     render_template,
     request,
-    session,
     stream_with_context,
 )
 
@@ -20,30 +18,82 @@ app = Flask(__name__)
 app.secret_key = FLASK_SECRET_KEY
 
 
+def validate_user_content():
+    """
+    Raise an error if user_content not in request. Otherwise return
+    user_content.
+    """
+    if "user_content" not in request.args:
+        abort(400, "missing required parameter: user_content")
+    return request.args["user_content"]
+
+
+def _stream_html_response(convo, user_content, stream_fn=Sambot().stream_convo):
+    """
+    Repeatedly yield the entire conversation as HTML data, as the bot message is
+    updated by the stream
+    """
+    for convo in stream_fn(user_content, convo):
+        if isinstance(convo, str):
+            # pass-along arbitrary string as data for the client to interpret.
+            # this allows stream_convo to send intermediate messages to the
+            # client while the main data is also being streamed...
+            yield f"data: {convo}\n\n"
+        else:
+            # render convo to HTML and yield partial result
+            data = render_jinja2("convo.html", {"convo": convo})
+            yield f"data: {data}\n\n"
+    yield f"data: STOP\n\n"
+
+
 @app.route("/stream")
-def stream_html():
-
-    user_content = request.args.get("user_content", None)
-    if not user_content:
-        return Response("missing required parameter: user_content", status=400)
-
+def stream_sambot_response():
     sambot = Sambot()
     session_convo = sambot.load_session_convo()
+    user_content = validate_user_content()
+    return Response(
+        response=stream_with_context(
+            _stream_html_response(
+                convo=session_convo,
+                user_content=user_content,
+            )
+        ),
+        mimetype="text/event-stream",
+    )
 
-    def generate_html():
-        for convo in sambot.dummy_stream(user_content, session_convo):
-            if isinstance(convo, str):
-                # pass-along arbitrary string as data for the client to interpret.
-                # this allows stream_convo to send intermediate messages to the
-                # client while the main data is also being streamed...
-                yield f"data: {convo}\n\n"
-            else:
-                # render convo to HTML and yield partial result
-                data = render_jinja2("convo.html", {"convo": convo})
-                yield f"data: {data}\n\n"
-        yield f"data: STOP\n\n"
 
-    return Response(stream_with_context(generate_html()), mimetype="text/event-stream")
+@app.route("/stream_dummy")
+def stream_dummy_response():
+    sambot = Sambot()
+    session_convo = sambot.load_session_convo()
+    user_content = validate_user_content()
+    return Response(
+        response=stream_with_context(
+            _stream_html_response(
+                convo=session_convo,
+                user_content=user_content,
+                stream_fn=sambot.dummy_stream,
+            )
+        ),
+        mimetype="text/event-stream",
+    )
+
+
+@app.route("/stream_initial")
+def stream_initial_response():
+    sambot = Sambot()
+    session_convo = sambot.load_session_convo()
+    user_content = "THIS IS NOT A USER MESSAGE. Introduce yourself very briefly."
+    return Response(
+        response=stream_with_context(
+            _stream_html_response(
+                convo=session_convo,
+                user_content=user_content,
+                stream_fn=sambot.stream_initial,
+            )
+        ),
+        mimetype="text/event-stream",
+    )
 
 
 @app.route("/checkin", methods=["GET"])

@@ -143,3 +143,37 @@ class Sambot:
 
         # save after entire bot response has been created.
         db.save_convo(convo)
+
+    def stream_initial(
+        self,
+        user_content: str,
+        convo: Conversation,
+    ) -> Generator[Conversation | str, None, None]:
+        """
+        TODO
+        """
+
+        # let client know it can start ellipsis animation.
+        yield "START ELLIPSIS"
+
+        # compute system message (this is a blocking call to the ChatGPT API.)
+        system_prompt = self._create_system_prompt(user_content)
+        convo.set_system(SystemMessage(system_prompt))
+        convo.append(UserMessage(user_content))
+
+        # stream response data back to client.
+        partial_response = ""
+        for token in gpt.chat_stream(convo):
+            partial_response += token
+            partial_response = self._format_response(partial_response)
+            if isinstance(convo.latest, UserMessage):
+                # append the initial bot message. this is done here because i
+                # want the smallest possible delay between when the ellipsis
+                # animation stops and GPT starts streaming!.
+                convo.pop()  # remove user msg before yielding!
+                convo.append(BotMessage(""))
+            convo.update(BotMessage(partial_response))
+            yield convo
+
+        # save after entire bot response has been created.
+        db.save_convo(convo)

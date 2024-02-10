@@ -17,9 +17,9 @@ const onDomLoad = () => {
         .then(_ => scrollDown())
         .then(_ => {
             if (0 == numChatMessages()){
-                //stream("Hi, this is NOT the user speaking, but rather an automated message " +
-                //"being sent to you at the start of a new conversation with someone. Please respond with an " +
-                //"informal greeting and a very brief explination of who you are and what this website is.");
+                const initialPrompt = 'Lorem Ipsum';
+                const initialStream = new EventSource('/stream_initial?user_content=' + initialPrompt);
+                streamMessageData(initialStream);
             }
         });
 };
