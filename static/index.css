@@ -9,6 +9,9 @@ body{
     margin: auto;
     text-transform: lowercase;
 }
+a{
+    color: #73aa72;
+}
 ul {
     max-height: 300px; /* 38.197% Adjust the max-height as needed */
     overflow-y: auto; /* Makes the list scrollable vertically if it exceeds max-height */
