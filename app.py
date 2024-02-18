@@ -31,7 +31,7 @@ def validate_user_content():
 def _stream_html_response(convo, user_content, stream_fn=bot.stream_convo):
     """
     Repeatedly yield the entire conversation as HTML data, as the bot message is
-    updated by the stream
+    updated by the stream.
     """
     for convo in stream_fn(user_content, convo):
         if isinstance(convo, str):
