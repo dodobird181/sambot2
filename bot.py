@@ -3,7 +3,7 @@ import functools
 import re
 import threading
 import time
-from typing import Generator, Optional
+from typing import Generator
 
 from flask import session
 
@@ -184,3 +184,12 @@ def stream_initial(
 
     # save after entire bot response has been created.
     db.save_convo(convo)
+
+
+"""
+Send email
+Respond to greeting
+Propose conversation starters
+Fetch project information from github
+Inject sambot code into prompt asking about how the bot works.
+"""
