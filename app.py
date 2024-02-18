@@ -9,7 +9,7 @@ from flask import (
     stream_with_context,
 )
 
-from bot import Sambot
+import bot
 from config import FLASK_SECRET_KEY
 from conversation import Message
 from templating import render_jinja2
@@ -28,7 +28,7 @@ def validate_user_content():
     return request.args["user_content"]
 
 
-def _stream_html_response(convo, user_content, stream_fn=Sambot().stream_convo):
+def _stream_html_response(convo, user_content, stream_fn=bot.stream_convo):
     """
     Repeatedly yield the entire conversation as HTML data, as the bot message is
     updated by the stream
@@ -48,8 +48,7 @@ def _stream_html_response(convo, user_content, stream_fn=Sambot().stream_convo):
 
 @app.route("/stream")
 def stream_sambot_response():
-    sambot = Sambot()
-    session_convo = sambot.load_session_convo()
+    session_convo = bot.load_session_convo()
     user_content = validate_user_content()
     return Response(
         response=stream_with_context(
@@ -64,15 +63,14 @@ def stream_sambot_response():
 
 @app.route("/stream_dummy")
 def stream_dummy_response():
-    sambot = Sambot()
-    session_convo = sambot.load_session_convo()
+    session_convo = bot.load_session_convo()
     user_content = validate_user_content()
     return Response(
         response=stream_with_context(
             _stream_html_response(
                 convo=session_convo,
                 user_content=user_content,
-                stream_fn=sambot.dummy_stream,
+                stream_fn=bot.dummy_stream,
             )
         ),
         mimetype="text/event-stream",
@@ -81,15 +79,14 @@ def stream_dummy_response():
 
 @app.route("/stream_initial")
 def stream_initial_response():
-    sambot = Sambot()
-    session_convo = sambot.load_session_convo()
-    user_content = "THIS IS NOT A USER MESSAGE. Introduce yourself very briefly."
+    session_convo = bot.load_session_convo()
+    user_content = "THIS IS NOT A USER INPUT: Hey! Who are you?"
     return Response(
         response=stream_with_context(
             _stream_html_response(
                 convo=session_convo,
                 user_content=user_content,
-                stream_fn=sambot.stream_initial,
+                stream_fn=bot.stream_initial,
             )
         ),
         mimetype="text/event-stream",
@@ -101,7 +98,7 @@ def checkin():
     """
     Initial web-page check-in. Returns an existing convo, or creates a new one.
     """
-    convo = Sambot().load_session_convo()
+    convo = bot.load_session_convo()
     html_content = render_jinja2("convo.html", {"convo": convo})
     response = make_response(html_content, 200)
     response.headers["Content-Type"] = "text/html"
