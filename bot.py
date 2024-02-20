@@ -1,42 +1,113 @@
-import enum
-import functools
-import re
-import threading
+import logging
 import time
 from typing import Generator
 
 from flask import session
 
+import config
 import gpt
 import persistence as db
 import templating
-from config import CONVO_ID_SESSION_KEY, MEMORIES_FILEPATH, PERSONALITY_FILEPATH
 from conversation import BotMessage, Conversation, SystemMessage, UserMessage
 
-
-@functools.lru_cache()
-def _bot_memories() -> str:
-    with open(MEMORIES_FILEPATH, "r", encoding="utf-8") as file:
-        return file.read()
+logger = logging.Logger(__name__)
 
 
-@functools.lru_cache()
-def _bot_personality() -> str:
-    with open(PERSONALITY_FILEPATH, "r", encoding="utf-8") as file:
-        return file.read()
+class BotFixtures:
+    """
+    Static data used by the bot.
+    """
+
+    class Static:
+        MEMORIES = "static/backend/memories.md"
+        PERSONALITY = "static/backend/personality.md"
+
+    class Templates:
+        SUMMARIZE = "backend/prompts/summarize.html"
+        SYSTEM = "backend/prompts/system.html"
+        IS_GREETING = "backend/prompts/is_greeting.html"
+
+    def _read_file(self, filename) -> str:
+        """Read and return the contents of a file as a string."""
+        with open(filename, "r", encoding="utf-8") as file:
+            return file.read()
+
+    @property
+    def memories(self) -> str:
+        return self._read_file(self.Static.MEMORIES)
+
+    @property
+    def personality(self) -> str:
+        return self._read_file(self.Static.PERSONALITY)
 
 
-def _extract_knowledge_prompt(user_content: str) -> str:
-    return f"""Summarize relevant information using bullet points from: "{_bot_memories()}"
-        to answer the following user quesiton: "{user_content}". Keep your summary as short as possible,
-        responding with "NO INFO" if none of the information available is relevant, or a single bullet
-        point if the user question is not very specific."""
+class Bot:
+    """
+    Bot wraps a conversation and contains additional state that informs
+    how it responds to the user. Bot is the link between the app's Flask
+    API, openai's ChatGPT API, and the conversation database model.
+    """
 
+    fixtures = BotFixtures()
 
-def _create_system_prompt(user_content: str) -> str:
-    knowledge = _extract_bot_knowledge(user_content)
-    return f"""{_bot_personality()}\n\n Instructions: Respond to all user messages using the information
-    provided below as your main source of truth: \n\n {knowledge}"""
+    def _load_template(self, template_name, data) -> str:
+        """Load template using data and return it as a string."""
+        return templating.render_jinja2(template_name, data)
+
+    def _summarize_prompt(self, long_content, relevant_question) -> str:
+        """Prompt designed for gpt-3.5 to summarize some arbitrarily long
+        content into bullet-points relevant to answering the given question."""
+        data = {"long_content": long_content, "relevant_question": relevant_question}
+        return self._load_template(self.fixtures.Templates.SUMMARIZE, data)
+
+    def _send_convo_to_gpt3(self, convo) -> str:
+        """Send a blocking API call to gpt-3 using a conversation object."""
+        return gpt.chat(convo, model="gpt-3.5-turbo")
+
+    def _send_prompt_to_gpt3(self, prompt) -> str:
+        """Send a blocking API call to gpt-3 using a single prompt."""
+        convo = Conversation.create_empty()
+        convo.append(UserMessage(prompt))
+        return self._send_convo_to_gpt3(convo)
+
+    def _interpret_gpt_bool(self, gpt_bool: str) -> bool:
+        """Interpret a string response from ChatGPT as either yes or no.
+        If unsure, this method will default to no and log a warning. NOTE:
+        this method relies on assumptions about how GPT is prompted to
+        interpret whether GPT said yes or no and will by no means work
+        for the general case."""
+        caps = gpt_bool.upper()
+        if "YES" in caps:
+            return True
+        elif "NO" in caps:
+            return False
+        logger.warning(
+            f"Failed to interpret GPT bool: '{gpt_bool}', defaulting to False."
+        )
+        return False
+
+    def _is_greeting(self, user_content) -> bool:
+        """Return `True` if the `user_content` is deemed to be a
+        greeting, `False` otherwise."""
+        is_greeting_prompt = self._load_template(
+            self.fixtures.Templates.IS_GREETING,
+            data={"user_content": user_content},
+        )
+        gpt_bool = self._send_prompt_to_gpt3(is_greeting_prompt)
+        return self._interpret_gpt_bool(gpt_bool)
+
+    def default_system_prompt(self, user_content) -> str:
+        """Prompt designed for gpt-4 to generate a response in the tone of
+        sambot's personality, using a summarized version of the sambot memories.
+        NOTE: This function sends a blocking call to gpt-3.5."""
+        summarize_prompt = self._summarize_prompt(self.fixtures.memories, user_content)
+        memory_knowledge = self._send_prompt_to_gpt3(summarize_prompt)
+        data = {"personality": self.fixtures.personality, "knowledge": memory_knowledge}
+        return self._load_template(self.fixtures.Templates.SYSTEM, data)
+
+    def __init__(self):
+        ...
+        # load conversation
 
 
 def _format_response(response_text: str) -> str:
@@ -51,7 +122,7 @@ def load_session_convo() -> Conversation:
     Load the request session's conversation from the database, or create a new conversation
     and save it to both the session and the database for future access.
     """
-    if convo_id := session.get(CONVO_ID_SESSION_KEY, None):
+    if convo_id := session.get(config.CONVO_ID_SESSION_KEY, None):
         if convo := db.load_convo(convo_id):
             print("found existing convo in db!")
             return convo
@@ -65,7 +136,7 @@ def load_session_convo() -> Conversation:
 
     # create, save, and return a new conversation
     convo = Conversation.create_empty()
-    session[CONVO_ID_SESSION_KEY] = convo.id
+    session[config.CONVO_ID_SESSION_KEY] = convo.id
     db.save_convo(convo)
     return convo
 

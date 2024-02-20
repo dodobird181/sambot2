@@ -1,14 +1,52 @@
+import bot
 import config
 import gpt
-from bot import Sambot
 from conversation import BotMessage, Conversation, SystemMessage, UserMessage
 from templating import render_jinja2
 
-for convo in Sambot().stream_convo(
-    user_content="eyyy dawg wassup!!",
-    convo=Conversation.create_empty(),
-):
-    ...
+b = bot.Bot()
+from typing import List, NamedTuple
+
+
+# Define the NamedTuple structure
+class Prompt(NamedTuple):
+    is_greeting: bool
+    content: str
+
+
+# Combine the prompts into a single list with the specified structure
+prompts: List[Prompt] = [
+    Prompt(True, "How are you doing today?"),
+    Prompt(True, "Good morning! How's everything going?"),
+    Prompt(True, "Hello there! How have you been?"),
+    Prompt(True, "Hey! What's new with you?"),
+    Prompt(True, "Hi, how's your day shaping up?"),
+    Prompt(True, "Greetings! How's life treating you?"),
+    Prompt(True, "What's up? How are you feeling today?"),
+    Prompt(True, "Good to see you! How have you been holding up?"),
+    Prompt(True, "Hey there! What's been happening in your world?"),
+    Prompt(True, "Hello! How's everything on your end?"),
+    Prompt(False, "Can you update me on the status of our project?"),
+    Prompt(False, "What was the outcome of the meeting yesterday?"),
+    Prompt(False, "Do you have the latest figures from the sales report?"),
+    Prompt(False, "Have you completed the tasks assigned to you?"),
+    Prompt(False, "What's the deadline for our current assignment?"),
+    Prompt(False, "Can you provide the details of the new policy?"),
+    Prompt(False, "What are the key points from the client feedback?"),
+    Prompt(False, "How much progress have we made on the development front?"),
+    Prompt(False, "What are the main challenges we're facing with the project?"),
+    Prompt(False, "Can you share the insights from the latest market research?"),
+    Prompt(False, " awdkjawd aw dawd aw daw d awd awd "),
+    Prompt(False, "poopy poopo pee pee peeeamwnd aw dawd "),
+    Prompt(False, "i hate biraawdn  awd awdbhi hi hi hi hi "),
+]
+
+for prompt in prompts:
+    is_greeting = b._is_greeting(prompt.content)
+    print(
+        f'{prompt.content[:20]} :: {"greeting" if is_greeting else "question"} :: {"✔" if is_greeting and prompt.is_greeting or (not is_greeting and not prompt.is_greeting) else "✘"}'
+    )
+
 
 exit(0)
 
