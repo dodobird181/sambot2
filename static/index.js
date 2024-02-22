@@ -3,8 +3,6 @@ let chatContainer = null;
 let userInputBox = null;
 
 
-// TODO: fix HTML flicker on refresh!
-
 /**
  * Stuff to happen after the DOM fully-loads.
  */
