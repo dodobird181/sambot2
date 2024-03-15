@@ -9,10 +9,10 @@ from flask import (
     stream_with_context,
 )
 
-import bot
+import bot.bot as bot
 from config import FLASK_SECRET_KEY
 from conversation import Message
-from templating import render_jinja2
+from templates import render
 
 app = Flask(__name__)
 app.secret_key = FLASK_SECRET_KEY
@@ -41,7 +41,7 @@ def _stream_html_response(convo, user_content, stream_fn=bot.stream_convo):
             yield f"data: {convo}\n\n"
         else:
             # render convo to HTML and yield partial result
-            data = render_jinja2("convo.html", {"convo": convo})
+            data = render("convo.html", convo=convo)
             yield f"data: {data}\n\n"
     yield f"data: STOP\n\n"
 
@@ -99,7 +99,7 @@ def checkin():
     Initial web-page check-in. Returns an existing convo, or creates a new one.
     """
     convo = bot.load_session_convo()
-    html_content = render_jinja2("convo.html", {"convo": convo})
+    html_content = render("convo.html", convo=convo)
     response = make_response(html_content, 200)
     response.headers["Content-Type"] = "text/html"
     return response

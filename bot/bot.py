@@ -1,16 +1,41 @@
 import logging
 import time
-from typing import Generator
+import uuid
+from typing import *
 
-from flask import session
+import flask
+from transitions.extensions import HierarchicalMachine
 
 import config
 import gpt
 import persistence as db
-import templating
+import templates
 from conversation import BotMessage, Conversation, SystemMessage, UserMessage
 
 logger = logging.Logger(__name__)
+
+
+"""
+Send email
+Respond to greeting
+Propose conversation starters
+Fetch project information from github
+Inject sambot code into prompt asking about how the bot works.
+"""
+
+
+"""
+Bot can be in the following ACTIVE states:
+1. processing_gpt3 and processing_gpt4,
+2. sending_email
+3. retrieving_github_info
+"""
+
+"""
+BOt can also be in the following PASSIVE states:
+1. choose_strategy,
+2. awaiting_email_confirmation
+"""
 
 
 class BotFixtures:
@@ -52,17 +77,13 @@ class Bot:
 
     def _load_template(self, template_name, data) -> str:
         """Load template using data and return it as a string."""
-        return templating.render_jinja2(template_name, data)
+        return templates.render(template_name, data)
 
     def _summarize_prompt(self, long_content, relevant_question) -> str:
         """Prompt designed for gpt-3.5 to summarize some arbitrarily long
         content into bullet-points relevant to answering the given question."""
         data = {"long_content": long_content, "relevant_question": relevant_question}
         return self._load_template(self.fixtures.Templates.SUMMARIZE, data)
-
-    def _send_convo_to_gpt3(self, convo) -> str:
-        """Send a blocking API call to gpt-3 using a conversation object."""
-        return gpt.chat(convo, model="gpt-3.5-turbo")
 
     def _send_prompt_to_gpt3(self, prompt) -> str:
         """Send a blocking API call to gpt-3 using a single prompt."""
@@ -122,7 +143,7 @@ def load_session_convo() -> Conversation:
     Load the request session's conversation from the database, or create a new conversation
     and save it to both the session and the database for future access.
     """
-    if convo_id := session.get(config.CONVO_ID_SESSION_KEY, None):
+    if convo_id := flask.session.get(config.CONVO_ID_SESSION_KEY, None):
         if convo := db.load_convo(convo_id):
             print("found existing convo in db!")
             return convo
@@ -255,12 +276,3 @@ def stream_initial(
 
     # save after entire bot response has been created.
     db.save_convo(convo)
-
-
-"""
-Send email
-Respond to greeting
-Propose conversation starters
-Fetch project information from github
-Inject sambot code into prompt asking about how the bot works.
-"""

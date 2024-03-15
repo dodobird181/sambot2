@@ -10,6 +10,12 @@ if not os.path.exists(DATA_FILEPATH):
     os.makedirs(DATA_FILEPATH)
 
 
+class Sambot(Struct):
+    id: str
+    convo_id: str
+    state: str
+
+
 class Message(Struct):
     role: str
     content: str
@@ -19,6 +25,21 @@ class Message(Struct):
 class Conversation(Struct):
     id: str
     messages: list[Message]
+
+
+def save_sambot(app_sambot, path=DATA_FILEPATH) -> None:
+    """
+    Save an app sambot to a json file.
+    """
+    json_string = encode(
+        Sambot(
+            id=app_sambot.id,
+            convo_id=app_sambot.convo.id,
+            state=app_sambot.state,
+        ),
+    )
+    with open(f"{path}BOT--{app_sambot.id}.json", "wb") as file:
+        file.write(json_string)
 
 
 def save_convo(app_conversation, path=DATA_FILEPATH) -> None:
@@ -38,8 +59,24 @@ def save_convo(app_conversation, path=DATA_FILEPATH) -> None:
             ],
         )
     )
-    with open(f"{path}{app_conversation.id}.json", "wb") as file:
+    with open(f"{path}CONVO--{app_conversation.id}.json", "wb") as file:
         file.write(json_string)
+
+
+def load_sambot(id, path=DATA_FILEPATH):
+    try:
+        with open(f"{path}BOT--{id}.json", "r") as file:
+            sambot = decode(file.read(), type=Sambot)
+    except FileNotFoundError:
+        return None
+
+    import bot.bot as bot
+
+    return bot.Sambot(
+        convo=load_convo(id=sambot.convo_id),
+        state=sambot.state,
+        id=sambot.id,
+    )
 
 
 def load_convo(id: str, path=DATA_FILEPATH):
@@ -49,7 +86,7 @@ def load_convo(id: str, path=DATA_FILEPATH):
     lengthy and uses delayed imports. See if you can't fix this...
     """
     try:
-        with open(f"{path}{id}.json", "r") as file:
+        with open(f"{path}CONVO--{id}.json", "r") as file:
             conversation = decode(file.read(), type=Conversation)
     except FileNotFoundError:
         return None

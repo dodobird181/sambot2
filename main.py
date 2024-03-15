@@ -1,8 +1,15 @@
-import bot
+import bot.bot as bot
 import config
 import gpt
+import persistence
 from conversation import BotMessage, Conversation, SystemMessage, UserMessage
-from templating import render_jinja2
+from templates import render
+
+convo = Conversation.create_empty()
+sambot = bot.Sambot(convo=convo, state="DUMMY_STATE")
+persistence.save_sambot(app_sambot=sambot)
+
+exit(0)
 
 b = bot.Bot()
 from typing import List, NamedTuple
