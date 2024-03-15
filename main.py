@@ -1,13 +1,14 @@
-import bot.bot as bot
-import config
-import gpt
-import persistence
-from conversation import BotMessage, Conversation, SystemMessage, UserMessage
-from templates import render
+import logger
+from chat import Chat
 
-convo = Conversation.create_empty()
-sambot = bot.Sambot(convo=convo, state="DUMMY_STATE")
-persistence.save_sambot(app_sambot=sambot)
+chat = Chat.objects.create()
+
+while True:
+    user_input = input("User: ")
+    chat.append(user_input, Chat.USER)
+    response = chat.gpt_request(model="gpt-4")
+    chat.append(response, role=Chat.ASSISTANT)
+
 
 exit(0)
 

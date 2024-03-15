@@ -2,11 +2,11 @@
 Module for rendering more complicated HTML templates using jinja2.
 """
 
+import enum
+
 import jinja2
 
 import config
-
-import enum
 
 
 def render(name, **data):

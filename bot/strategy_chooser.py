@@ -1,9 +1,10 @@
 import asyncio
 import enum
 import logging
-import templates
+
 import conversation
 import gpt
+import templates
 
 logger = logging.Logger(__name__)
 
@@ -39,4 +40,3 @@ def choose_bot_strategy(user_content, convo) -> BotStrategy:
     Given some user input, and the current conversation, choose an appropriate bot strategy.
     """
     gpt.chat(convo=conversation.Conversation())
-

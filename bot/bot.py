@@ -4,11 +4,11 @@ import uuid
 from typing import *
 
 import flask
+import persistence as db
 from transitions.extensions import HierarchicalMachine
 
 import config
 import gpt
-import persistence as db
 import templates
 from conversation import BotMessage, Conversation, SystemMessage, UserMessage
 

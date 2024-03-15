@@ -5,6 +5,7 @@ env_secrets.py
 data/
 test_data/
 start_dev.py
+pkldb/
 
 # Byte-compiled / optimized / DLL files
 __pycache__/

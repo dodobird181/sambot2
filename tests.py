@@ -3,10 +3,10 @@ import unittest
 
 from msgspec.json import encode
 from parameterized import parameterized, parameterized_class
+from persistence import load_convo, save_convo
 
 from config import TEST_DATA_FILEPATH
 from conversation import *
-from persistence import load_convo, save_convo
 
 if not os.path.exists(TEST_DATA_FILEPATH):
     os.makedirs(TEST_DATA_FILEPATH)
