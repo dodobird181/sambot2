@@ -20,7 +20,7 @@ class ChatFactory:
         Get the database path for a given chat object,
         or it's uuid if known.
         """
-        id = id if isinstance(chat_or_id, str) else chat_or_id.id
+        id = chat_or_id if isinstance(chat_or_id, (str, uuid.UUID)) else chat_or_id.id
         return f"{config.PICKLE_DB_PATH}{id}.pkl"
 
     def create(self):
@@ -98,6 +98,9 @@ class Chat:
             pickle.dump(self, file)
 
     def gpt_request(self, model, stream=False):
+        """
+        Make a gpt request using the messages in this chat.
+        """
 
         def streamed_response():
             return gpt.request(
