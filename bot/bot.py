@@ -5,12 +5,12 @@ from typing import *
 
 import flask
 import persistence as db
+from conversation import BotMessage, Conversation, SystemMessage, UserMessage
 from transitions.extensions import HierarchicalMachine
 
 import config
 import gpt
 import templates
-from conversation import BotMessage, Conversation, SystemMessage, UserMessage
 
 logger = logging.Logger(__name__)
 

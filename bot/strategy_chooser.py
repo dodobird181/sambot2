@@ -2,7 +2,6 @@ import asyncio
 import enum
 import logging
 
-import conversation
 import gpt
 import templates
 

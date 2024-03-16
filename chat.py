@@ -1,6 +1,6 @@
 import copy
 import dataclasses
-import enum
+import pathlib
 import pickle
 import uuid
 
@@ -14,12 +14,21 @@ class ChatFactory:
     For creating and retrieving chat objects from the database.
     """
 
+    @staticmethod
+    def path(chat_or_id) -> str:
+        """
+        Get the database path for a given chat object,
+        or it's uuid if known.
+        """
+        id = id if isinstance(chat_or_id, str) else chat_or_id.id
+        return f"{config.PICKLE_DB_PATH}{id}.pkl"
+
     def create(self):
         """
         Create an empty chat in the database.
         """
         chat = Chat()
-        with open(f"{config.PICKLE_DB_PATH}{chat.id}.pkl", "wb") as file:
+        with open(self.path(chat), "wb") as file:
             pickle.dump(chat, file)
         return chat
 
@@ -27,8 +36,15 @@ class ChatFactory:
         """
         Retrieve a chat from the database.
         """
-        with open(f"{config.PICKLE_DB_PATH}{id}.pkl", "rb") as file:
+        with open(self.path(id), "rb") as file:
             return pickle.load(file)
+
+    def delete(self, id):
+        """
+        Delete a chat from the database.
+        """
+        path = pathlib.Path(self.path(id))
+        path.unlink(missing_ok=True)
 
 
 class Chat:

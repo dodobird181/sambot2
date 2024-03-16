@@ -1,3 +1,4 @@
+from conversation import Message
 from flask import (
     Flask,
     Response,
@@ -11,7 +12,6 @@ from flask import (
 
 import bot.bot as bot
 from config import FLASK_SECRET_KEY
-from conversation import Message
 from templates import render
 
 app = Flask(__name__)
