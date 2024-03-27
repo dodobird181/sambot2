@@ -10,7 +10,6 @@ from flask import (
     stream_with_context,
 )
 
-import bot.bot as bot
 from config import FLASK_SECRET_KEY
 from templates import render
 

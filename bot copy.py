@@ -4,12 +4,12 @@ import uuid
 from typing import *
 
 import flask
+import openai.gpt as gpt
 import persistence as db
 from conversation import BotMessage, Conversation, SystemMessage, UserMessage
 from transitions.extensions import HierarchicalMachine
 
 import config
-import gpt
 import templates
 
 logger = logging.Logger(__name__)
@@ -102,9 +102,7 @@ class Bot:
             return True
         elif "NO" in caps:
             return False
-        logger.warning(
-            f"Failed to interpret GPT bool: '{gpt_bool}', defaulting to False."
-        )
+        logger.warning(f"Failed to interpret GPT bool: '{gpt_bool}', defaulting to False.")
         return False
 
     def _is_greeting(self, user_content) -> bool:
@@ -151,9 +149,7 @@ def load_session_convo() -> Conversation:
             # missing in database but key existed, create a new convo
             # and log a warning. Either the convo got deleted from the
             # database, or an invalid id was saved in the session...
-            print(
-                f"WARNING: convo_id ({convo_id}) in session but missing from database."
-            )
+            print(f"WARNING: convo_id ({convo_id}) in session but missing from database.")
 
     # create, save, and return a new conversation
     convo = Conversation.create_empty()

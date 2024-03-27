@@ -5,23 +5,14 @@ import pickle
 import uuid
 
 import config
-import gpt
+import factory
 import logger
 
 
-class ChatFactory:
+class ChatFactory(factory.Factory):
     """
     For creating and retrieving chat objects from the database.
     """
-
-    @staticmethod
-    def path(chat_or_id) -> str:
-        """
-        Get the database path for a given chat object,
-        or it's uuid if known.
-        """
-        id = chat_or_id if isinstance(chat_or_id, (str, uuid.UUID)) else chat_or_id.id
-        return f"{config.PICKLE_DB_PATH}{id}.pkl"
 
     def create(self):
         """
@@ -36,8 +27,12 @@ class ChatFactory:
         """
         Retrieve a chat from the database.
         """
-        with open(self.path(id), "rb") as file:
-            return pickle.load(file)
+        try:
+            with open(self.path(id), "rb") as file:
+                return pickle.load(file)
+        except FileNotFoundError as e:
+            logger.warning(f"No chat found at = {self.path(id)}", exc_info=e)
+            return None
 
     def delete(self, id):
         """
@@ -50,7 +45,7 @@ class ChatFactory:
 class Chat:
     """
     Chat object that supports deep-copy, CRUD operations via pickle,
-    message appending and sending requests via chat gpt's api.
+    message appending and sending requests to chat gpt's api.
     """
 
     SYSTEM = "system"
@@ -65,6 +60,9 @@ class Chat:
 
         content: str
         role: str
+
+        def dict(self):
+            return {"role": self.role, "content": self.content}
 
     objects = ChatFactory()
 
@@ -96,24 +94,3 @@ class Chat:
         """
         with open(f"{config.PICKLE_DB_PATH}{self.id}.pkl", "wb") as file:
             pickle.dump(self, file)
-
-    def gpt_request(self, model, stream=False):
-        """
-        Make a gpt request using the messages in this chat.
-        """
-
-        def streamed_response():
-            return gpt.request(
-                messages=[
-                    {"role": i.role, "content": i.content} for i in self.messages
-                ],
-                model=model,
-                stream=stream,
-            )
-
-        if stream:
-            for chunk in streamed_response():
-                yield chunk
-        else:
-            all_data = "".join(chunk for chunk in streamed_response())
-            return all_data
