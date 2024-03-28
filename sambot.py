@@ -10,7 +10,7 @@ import flask
 
 import apis.openai as openai
 import config
-import logger
+import logs
 import templates
 import utils
 from chat import Chat
@@ -30,7 +30,7 @@ def find_or_create_chat(session) -> Chat:
     if chat_id := session.get(config.CHAT_SESSION_KEY, None):
         if chat := Chat.objects.retrieve(chat_id):
             return chat
-        logger.warning("session key failed to retrieve chat from database!")
+        logs.warning("session key failed to retrieve chat from database!")
 
     chat = Chat()
     chat.save()
@@ -124,7 +124,7 @@ def perform_response(user_input: str, user_chat: Chat, response_strategy: Strate
         # perform default sambot response -> summarize the knowledge-base using
         # gpt3 and inject as system prompt for gpt4.
         # TODO: create proper system message here...
-        logger.debug("Using default strategy...")
+        logs.debug("Using default strategy...")
         with utils.LogTime("Summarized knowledge in {seconds} seconds."):
             summarized_knowledge = openai.get_completion(
                 openai.flat_messages(

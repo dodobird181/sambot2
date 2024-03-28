@@ -6,7 +6,7 @@ import uuid
 
 import config
 import factory
-import logger
+import logs
 
 
 class ChatFactory(factory.Factory):
@@ -31,7 +31,7 @@ class ChatFactory(factory.Factory):
             with open(self.path(id), "rb") as file:
                 return pickle.load(file)
         except FileNotFoundError as e:
-            logger.warning(f"No chat found at = {self.path(id)}", exc_info=e)
+            logs.warning(f"No chat found at = {self.path(id)}", exc_info=e)
             return None
 
     def delete(self, id):
