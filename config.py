@@ -12,4 +12,5 @@ PICKLE_DB_PATH = ".pkldb/"
 CHAT_SESSION_KEY = "sambot-chat-session"
 LOGGING_LEVEL = logging.INFO
 
-from env_secrets import FLASK_SECRET_KEY, OPENAI_API_KEY
+# import secret keys
+from env_secrets import *
