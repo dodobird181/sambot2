@@ -1,7 +1,7 @@
 import unittest
 
-import settings
 import sambot
+import settings
 import tests
 from chat import Chat
 
