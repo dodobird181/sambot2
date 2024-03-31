@@ -13,5 +13,12 @@ PICKLE_DB_PATH = ".pkldb/"
 CHAT_SESSION_KEY = "sambot-chat-session"
 LOGGING_LEVEL = logging.INFO
 
-FLASK_SECRET_KEY = os.environ["FLASK_SECRET_KEY"]
-OPENAI_API_KEY = os.environ["OPENAI_API_KEY"]
+try:
+    # default is to pull secrets from prod shell environment
+    FLASK_SECRET_KEY = os.environ["FLASK_SECRET_KEY"]
+    OPENAI_API_KEY = os.environ["OPENAI_API_KEY"]
+except KeyError:
+    # fallback to pulling secrets from local development environment
+    import env_secrets
+    FLASK_SECRET_KEY = env_secrets.FLASK_SECRET_KEY
+    OPENAI_API_KEY = env_secrets.OPENAI_API_KEY
