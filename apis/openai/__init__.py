@@ -1,8 +1,8 @@
 import openai
 
-import config
+import settings
 
-client = openai.OpenAI(api_key=config.OPENAI_API_KEY)
+client = openai.OpenAI(api_key=settings.OPENAI_API_KEY)
 
 # expose module endpoints
 from apis.openai.completions import get_completion

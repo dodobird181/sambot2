@@ -9,7 +9,7 @@ import persistence as db
 from conversation import BotMessage, Conversation, SystemMessage, UserMessage
 from transitions.extensions import HierarchicalMachine
 
-import config
+import settings
 import templates
 
 logger = logging.Logger(__name__)
@@ -141,7 +141,7 @@ def load_session_convo() -> Conversation:
     Load the request session's conversation from the database, or create a new conversation
     and save it to both the session and the database for future access.
     """
-    if convo_id := flask.session.get(config.CONVO_ID_SESSION_KEY, None):
+    if convo_id := flask.session.get(settings.CONVO_ID_SESSION_KEY, None):
         if convo := db.load_convo(convo_id):
             print("found existing convo in db!")
             return convo
@@ -153,7 +153,7 @@ def load_session_convo() -> Conversation:
 
     # create, save, and return a new conversation
     convo = Conversation.create_empty()
-    session[config.CONVO_ID_SESSION_KEY] = convo.id
+    session[settings.CONVO_ID_SESSION_KEY] = convo.id
     db.save_convo(convo)
     return convo
 

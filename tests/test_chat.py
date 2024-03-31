@@ -3,7 +3,7 @@ import pickle
 import unittest
 import uuid
 
-import config
+import settings
 import tests
 from chat import Chat, ChatFactory
 

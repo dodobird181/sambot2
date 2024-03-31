@@ -1,10 +1,10 @@
 # Added by sam
 .database.db
 .vscode
-env_secrets.py
+_env_secrets.py
 data/
 test_data/
-start_dev.py
+_start_dev.py
 pkldb/
 
 # Byte-compiled / optimized / DLL files

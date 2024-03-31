@@ -19,6 +19,6 @@ try:
     OPENAI_API_KEY = os.environ["OPENAI_API_KEY"]
 except KeyError:
     # fallback to pulling secrets from local development environment
-    import env_secrets
-    FLASK_SECRET_KEY = env_secrets.FLASK_SECRET_KEY
-    OPENAI_API_KEY = env_secrets.OPENAI_API_KEY
+    import _env_secrets
+    FLASK_SECRET_KEY = _env_secrets.FLASK_SECRET_KEY
+    OPENAI_API_KEY = _env_secrets.OPENAI_API_KEY

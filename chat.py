@@ -4,12 +4,12 @@ import pathlib
 import pickle
 import uuid
 
-import config
-import factory
+import settings
+import utils
 import logs
 
 
-class ChatFactory(factory.Factory):
+class ChatFactory(utils.Factory):
     """
     For creating and retrieving chat objects from the database.
     """
@@ -92,5 +92,5 @@ class Chat:
         """
         Save this chat to the database.
         """
-        with open(f"{config.PICKLE_DB_PATH}{self.id}.pkl", "wb") as file:
+        with open(f"{settings.PICKLE_DB_PATH}{self.id}.pkl", "wb") as file:
             pickle.dump(self, file)

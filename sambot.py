@@ -9,7 +9,7 @@ import enum
 import flask
 
 import apis.openai as openai
-import config
+import settings
 import logs
 import templates
 import utils
@@ -27,14 +27,14 @@ def find_or_create_chat(session) -> Chat:
     Load a chat from the flask session, or create a new one
     and save it's id to the session for future retrieval.
     """
-    if chat_id := session.get(config.CHAT_SESSION_KEY, None):
+    if chat_id := session.get(settings.CHAT_SESSION_KEY, None):
         if chat := Chat.objects.retrieve(chat_id):
             return chat
         logs.warning("session key failed to retrieve chat from database!")
 
     chat = Chat()
     chat.save()
-    session[config.CHAT_SESSION_KEY] = str(chat.id)
+    session[settings.CHAT_SESSION_KEY] = str(chat.id)
     return chat
 
 

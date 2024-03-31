@@ -6,14 +6,14 @@ import enum
 
 import jinja2
 
-import config
+import settings
 
 
 def render(name, **data):
     """
     Render an HTML template using jinja2 and return the HTML as a string.
     """
-    loader = jinja2.FileSystemLoader(config.TEMPLATES_FILEPATH)
+    loader = jinja2.FileSystemLoader(settings.TEMPLATES_FILEPATH)
     env = jinja2.Environment(loader=loader)
     template = env.get_template(name)
     # remove newlines and tabs to clean up the HTML data

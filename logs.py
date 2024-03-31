@@ -1,7 +1,7 @@
 import logging
 import sys
 
-import config
+import settings
 
 GREEN_LOGGING_LEVEL = 60  # Higher than critical.
 logging.addLevelName(GREEN_LOGGING_LEVEL, "GREEN")
@@ -62,7 +62,7 @@ def get_logger(name):
     Get a new logger instance with the given module name.
     """
     logger = CustomLogger(name)
-    logger.setLevel(config.LOGGING_LEVEL)
+    logger.setLevel(settings.LOGGING_LEVEL)
     handler = logging.StreamHandler()
     formatter = ColorFormatter()
     handler.setFormatter(formatter)

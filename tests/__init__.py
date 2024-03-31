@@ -3,7 +3,7 @@ import random
 import shutil
 import unittest.mock
 
-import config
+import settings
 
 
 class UuidSeederMixin:
@@ -27,10 +27,10 @@ class DatabaseTestCase(UuidSeederMixin, unittest.TestCase):
     @classmethod
     def setUpClass(cls):
         super().setUpClass()
-        config.PICKLE_DB_PATH = "tstpkldb/"
-        os.mkdir(config.PICKLE_DB_PATH)
+        settings.PICKLE_DB_PATH = "tstpkldb/"
+        os.mkdir(settings.PICKLE_DB_PATH)
 
     @classmethod
     def tearDownClass(cls):
         super().tearDownClass()
-        shutil.rmtree(config.PICKLE_DB_PATH)
+        shutil.rmtree(settings.PICKLE_DB_PATH)

@@ -10,7 +10,7 @@ from flask import (
     stream_with_context,
 )
 
-from config import FLASK_SECRET_KEY
+from settings import FLASK_SECRET_KEY
 from templates import render
 
 app = Flask(__name__)
