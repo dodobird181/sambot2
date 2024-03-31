@@ -1,3 +1,5 @@
+# TODO: This file is marked for deprecation!
+
 from conversation import Message
 from flask import (
     Flask,
