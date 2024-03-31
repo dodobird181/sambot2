@@ -4,9 +4,9 @@ import pathlib
 import pickle
 import uuid
 
+import logs
 import settings
 import utils
-import logs
 
 
 class ChatFactory(utils.Factory):

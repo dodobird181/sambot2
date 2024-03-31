@@ -9,8 +9,8 @@ import enum
 import flask
 
 import apis.openai as openai
-import settings
 import logs
+import settings
 import templates
 import utils
 from chat import Chat

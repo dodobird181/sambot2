@@ -29,7 +29,7 @@ class ColorFormatter(logging.Formatter):
     Logging formatter that adds a nice datetime format and colors.
     """
 
-    blue = '\033[94m'
+    blue = "\033[94m"
     green = "\033[92m"
     grey = "\x1b[38;21m"
     dark_grey = "\x1b[38;5;235m"

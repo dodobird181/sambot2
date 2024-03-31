@@ -20,5 +20,6 @@ try:
 except KeyError:
     # fallback to pulling secrets from local development environment
     import _env_secrets
+
     FLASK_SECRET_KEY = _env_secrets.FLASK_SECRET_KEY
     OPENAI_API_KEY = _env_secrets.OPENAI_API_KEY
