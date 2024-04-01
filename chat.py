@@ -41,6 +41,15 @@ class ChatFactory(utils.Factory):
         path = pathlib.Path(self.path(id))
         path.unlink(missing_ok=True)
 
+    def find_or_create(self, id):
+        """
+        Find a chat with the given id in the database,
+        or ctreate one if none exists.
+        """
+        if chat := self.retrieve(id):
+            return chat
+        return self.create()
+
 
 class Chat:
     """

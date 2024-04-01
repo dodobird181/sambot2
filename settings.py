@@ -5,13 +5,12 @@ Global application config.
 import logging
 import os
 
-# TODO: Delete old config vars
-CONVO_ID_SESSION_KEY = "sambot_convo_id"
 TEMPLATES_FILEPATH = "templates"
 
 PICKLE_DB_PATH = ".pkldb/"
-CHAT_SESSION_KEY = "sambot-chat-session"
+SESSION_CHAT_KEY = "sambot-chat-session"
 LOGGING_LEVEL = logging.INFO
+ENABLE_DUMMY_RESPONSES = True
 
 try:
     # default is to pull secrets from prod shell environment

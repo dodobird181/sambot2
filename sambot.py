@@ -27,14 +27,14 @@ def find_or_create_chat(session) -> Chat:
     Load a chat from the flask session, or create a new one
     and save it's id to the session for future retrieval.
     """
-    if chat_id := session.get(settings.CHAT_SESSION_KEY, None):
+    if chat_id := session.get(settings.SESSION_CHAT_KEY, None):
         if chat := Chat.objects.retrieve(chat_id):
             return chat
         logs.warning("session key failed to retrieve chat from database!")
 
     chat = Chat()
     chat.save()
-    session[settings.CHAT_SESSION_KEY] = str(chat.id)
+    session[settings.SESSION_CHAT_KEY] = str(chat.id)
     return chat
 
 

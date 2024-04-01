@@ -19,16 +19,6 @@ app = Flask(__name__)
 app.secret_key = FLASK_SECRET_KEY
 
 
-def validate_user_content():
-    """
-    Raise an error if user_content not in request. Otherwise return
-    user_content.
-    """
-    if "user_content" not in request.args:
-        abort(400, "missing required parameter: user_content")
-    return request.args["user_content"]
-
-
 def _stream_html_response(convo, user_content, stream_fn=bot.stream_convo):
     """
     Repeatedly yield the entire conversation as HTML data, as the bot message is
