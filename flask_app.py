@@ -8,7 +8,7 @@ app.secret_key = settings.FLASK_SECRET_KEY
 
 @app.route("/")
 def index():
-    return "Hello world!"
+    return flask.render_template("index.html")
 
 
 if __name__ == "__main__":
