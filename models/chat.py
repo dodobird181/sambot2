@@ -4,9 +4,11 @@ import pathlib
 import pickle
 import uuid
 
-import logs
+import applogging
 import settings
 import utils
+
+logger = applogging.get_logger(__name__)
 
 
 class ChatFactory(utils.Factory):
@@ -31,7 +33,7 @@ class ChatFactory(utils.Factory):
             with open(self.path(id), "rb") as file:
                 return pickle.load(file)
         except FileNotFoundError as e:
-            logs.warning(f"No chat found at = {self.path(id)}", exc_info=e)
+            logger.warning(f"No chat found at = {self.path(id)}", exc_info=e)
             return None
 
     def delete(self, id):
@@ -84,7 +86,9 @@ class Chat:
 
     def copy(self):
         """
-        Create a deep-copy of this chat.
+        Create a deep-copy of this chat. NOTE: This method will
+        produce a different UUID for the chat. However, everything
+        else should be the same.
         """
         chat_copy = Chat()
         chat_copy.messages = copy.deepcopy(self.messages)
@@ -103,3 +107,15 @@ class Chat:
         """
         with open(f"{settings.PICKLE_DB_PATH}{self.id}.pkl", "wb") as file:
             pickle.dump(self, file)
+
+    def set_system_message(self, message: str):
+        """
+        Override the current system message.
+        """
+        self.messages[0] = self.Message(message, self.SYSTEM)
+
+    def append_user(self, content):
+        self.append(content, role=self.USER)
+
+    def append_assistant(self, content):
+        self.append(content, role=self.ASSISTANT)
