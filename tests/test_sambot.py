@@ -1,9 +1,9 @@
 import unittest
 
+import models
 import sambot
 import settings
 import tests
-from chat import Chat
 
 
 class TestSambot(tests.DatabaseTestCase):
@@ -33,7 +33,7 @@ class TestSambot(tests.DatabaseTestCase):
         """
         A valid key in the session should return the existing chat referenced.
         """
-        existing_chat = Chat.objects.create()
+        existing_chat = models.Chat.objects.create()
         valid_session = {settings.SESSION_CHAT_KEY: str(existing_chat.id)}
         result = sambot.find_or_create_chat(session=valid_session)
         self.assertEqual(result.id, existing_chat.id, "retrieved correct chat")

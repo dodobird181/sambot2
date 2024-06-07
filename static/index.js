@@ -4,7 +4,7 @@ let userInputBox = null;
 
 
 /**
- * Stuff to happen after the DOM fully-loads.
+ * Load messages and scroll to the bottom.
  */
 const onDomLoad = () => {
     chatContainer = document.getElementById('stream-container');
@@ -15,9 +15,9 @@ const onDomLoad = () => {
         .then(_ => scrollDown())
         .then(_ => {
             if (0 == numChatMessages()){
-                const initialPrompt = 'Lorem Ipsum';
-                const initialStream = new EventSource('/stream_initial?user_content=' + initialPrompt);
-                streamMessageData(initialStream);
+                //const initialStream = new EventSource('/sambot');
+                //streamMessageData(initialStream);
+                // TODO: Potentially remove me!
             }
         });
 };
@@ -34,7 +34,7 @@ const numChatMessages = () => {
  * @param {*} container the DOM element to load HTML messages into.
  */
 const loadMessages = (container) => {
-    return fetch('/checkin', {method: 'GET'})
+    return fetch('/sambot', {method: 'GET'})
     .then(response => response.text())
     .then(htmlText => container.innerHTML = htmlText)
     .catch(error => console.error('Failed to load messages.', error));
@@ -126,7 +126,7 @@ const onKeyPress = (keyPressEvent) => {
     if (keyPressEvent.key === 'Enter') {
         keyPressEvent.preventDefault(); // prevent default form-submission behaviour
         const userInput = consumeUserInput();
-        const sambotStream = new EventSource('/stream?user_content=' + userInput);
+        const sambotStream = new EventSource('/sambot?content=' + userInput);
         streamMessageData(sambotStream);
     }
 };

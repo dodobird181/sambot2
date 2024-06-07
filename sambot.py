@@ -3,17 +3,15 @@ Main app logic lives here.
 """
 
 import asyncio
-import datetime as dt
 import enum
-
-import flask
-
+import random
 import apis.openai as openai
-import logs
+import applogging
+import models
 import settings
-import templates
-import utils
-from chat import Chat
+import time
+
+logger = applogging.get_logger(__name__)
 
 with open("memories.md", "r") as file:
     MEMORIES = file.read()
@@ -22,18 +20,19 @@ with open("personality.md", "r") as file:
     PERSONALITY = file.read()
 
 
-def find_or_create_chat(session) -> Chat:
+def find_or_create_chat(session) -> models.Chat:
     """
     Load a chat from the flask session, or create a new one
     and save it's id to the session for future retrieval.
     """
     if chat_id := session.get(settings.SESSION_CHAT_KEY, None):
-        if chat := Chat.objects.retrieve(chat_id):
+        if chat := models.Chat.objects.retrieve(chat_id):
+            logger.debug(f"Found session chat with ID: {chat_id}.")
             return chat
-        logs.warning("session key failed to retrieve chat from database!")
+        logger.warning(f"Failed to retrieve session chat with ID: {chat_id}.")
 
-    chat = Chat()
-    chat.save()
+    logger.debug("Creating new chat and adding to the session...")
+    chat = models.Chat.objects.create()
     session[settings.SESSION_CHAT_KEY] = str(chat.id)
     return chat
 
@@ -43,7 +42,8 @@ class Strategy(enum.Enum):
     Enum representation of how sambot should respond to the user.
     """
 
-    DEFAULT = "default"
+    DUMMY = 'dummy'  # fake message returned because dummy responses are enabled
+    DEFAULT = "default"  # normal conversation
     GREET = "greet"  # greet the user
     TOPICS = "topics"  # propose conversation topics
     INQUIRE_EMAIL = "inquire-email"  # inquire if sambot should send an email to the user
@@ -57,6 +57,11 @@ def choose_response_strategy(user_input, user_chat) -> Strategy:
     """
 
     async def get_strategy():
+        if settings.ENABLE_DUMMY_RESPONSES:
+            # short circuit API calls if we want to return a dummy response
+            return {
+                Strategy.DUMMY: True,
+            }
         strategy = await asyncio.gather(
             asyncio.to_thread(
                 openai.get_completion,
@@ -103,47 +108,98 @@ def choose_response_strategy(user_input, user_chat) -> Strategy:
             Strategy.TOPICS: strategy[2] == "YES",
         }
 
-    with utils.LogTime("Processed strategy in {seconds} seconds."):
+    with logger.logtime("Getting sambot strategy"):
         strategy = asyncio.run(get_strategy())
-    utils.log_dict(strategy, ":: ")
+        logger.debug(strategy)
 
+    # return the first strategy
     for key, value in strategy.items():
         if value:
             return key
-
     return Strategy.DEFAULT
 
 
-def perform_response(user_input: str, user_chat: Chat, response_strategy: Strategy):
+def resolve_response_strategy(content: str, chat: models.Chat, response_strategy: Strategy):
     """
     Generate a sambot response given the user's input, their chat history,
     and a strategy to use while responding. NOTE: This method will potentially
-    perform additional actions, e.g., sending emails, etc.
+    perform additional actions, e.g., sending emails, etc. The return type of this function
+    is a generator that spits out partially updating `Chat` instances.
     """
+    logger.debug(f"Using {response_strategy}...")
+
+    if settings.ENABLE_DUMMY_RESPONSES:
+        current_message = ""
+        chat.append_assistant(current_message)
+        time.sleep(2)
+        lorem = """
+            Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed non risus.
+            Suspendisse lectus tortor, dignissim sit amet, adipiscing nec, ultricies sed, dolor. Cras
+            elementum ultrices diam.
+        """.split(" ")
+        lorem.sort(key=lambda _: random.random())
+        for token in lorem:
+            current_message += token + ' '
+            chat.messages[len(chat.messages) - 1] = models.Chat.Message(
+                content=current_message,
+                role=models.Chat.ASSISTANT,
+            )
+            chat.save()
+            yield chat
+            time.sleep(0.05)
+        return
+
     if Strategy.DEFAULT == response_strategy:
-        # perform default sambot response -> summarize the knowledge-base using
-        # gpt3 and inject as system prompt for gpt4.
-        # TODO: create proper system message here...
-        logs.debug("Using default strategy...")
-        with utils.LogTime("Summarized knowledge in {seconds} seconds."):
+        # summarize the knowledge-base using gpt3 and inject as system prompt for gpt4.
+        with logger.logtime("Summarizing sambot knowledge"):
             summarized_knowledge = openai.get_completion(
                 openai.flat_messages(
                     f"""
                     Summarize relevant information using bullet points from the following content to answer the given
-                    quesiton. Keep your summary as short as possible. Respond with "NO INFO" if none of the information
+                    quesiton. Keep your summary as short as possible. Only respond with "NO INFO" if none of the information
                     available is relevant. Use a single bullet-point if the question is not very specific. \n\n
                     CONTENT: {MEMORIES}. \n\n
-                    QUESTION: {user_input}.
+                    QUESTION: {content}.
                     """
                 ),
                 "gpt-3.5-turbo",
             )
-        utils.log_large_string(summarized_knowledge, ":: ", line_length=70)
-        # user_chat.messages[0] = Chat.Message("SYSTEM MSG", Chat.SYSTEM)
-        exit(0)
-        return openai.get_completion(
-            model="gpt4",
-            stream=True,
-            messages=[msg.dict() for msg in user_chat.messages],
+
+        # build system message
+        system_message = f"""
+            # {PERSONALITY}.\n\n
+            # Instructions: Respond to all user messages using the information provided in your knowledge
+            as your main source of truth.\n\n
+            # Knowledge: {summarized_knowledge}.
+            """
+
+    elif Strategy.GREET == response_strategy:
+        system_message = f"""
+            # Personality: {PERSONALITY}.\n\n
+            # Instructions: Respond to the user with a casual greeting, integrating as appropriate with
+            the current context of the conversation.
+            """
+
+    else:
+        logger.error(f"Unsupported strategy: {response_strategy}")
+        return
+
+    # stream back partially-updating chat objects
+    logger.debug("Streaming sambot message...")
+    logger.debug(f'System message: "{system_message}".')
+    chat.set_system_message(system_message)
+    current_message = ""
+    chat.append_assistant(current_message)
+    for token in openai.get_completion(
+        model="gpt-4-1106-preview",
+        stream=True,
+        messages=[msg.dict() for msg in chat.messages],
+    ):
+        current_message += token
+        chat.messages[len(chat.messages) - 1] = models.Chat.Message(
+            content=current_message,
+            role=models.Chat.ASSISTANT,
         )
-    ...
+        chat.save()
+        yield chat
+

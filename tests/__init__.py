@@ -33,4 +33,4 @@ class DatabaseTestCase(UuidSeederMixin, unittest.TestCase):
     @classmethod
     def tearDownClass(cls):
         super().tearDownClass()
-        shutil.rmtree(settings.PICKLE_DB_PATH)
+        #shutil.rmtree(settings.PICKLE_DB_PATH)

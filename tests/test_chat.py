@@ -3,9 +3,8 @@ import pickle
 import unittest
 import uuid
 
-import settings
+import models
 import tests
-from chat import Chat, ChatFactory
 
 
 class TestChatFactory(tests.DatabaseTestCase):
@@ -17,20 +16,21 @@ class TestChatFactory(tests.DatabaseTestCase):
         super().setUp()
         self.chat_id = "05588eed-d7eb-45a4-b0ad-9fe39ab3c22a"
         self.chat_path = f"tstpkldb/{self.chat_id}.pkl"
+        self.factory = models.ChatFactory()
 
     def test_path(self):
         """
         Test path method works with UUID, str, and chat objects.
         """
-        self.assertEqual(self.chat_path, ChatFactory().path(self.chat_id), "str id works")
-        self.assertEqual(self.chat_path, ChatFactory().path(uuid.UUID(self.chat_id)), "uuid works")
-        self.assertEqual(self.chat_path, ChatFactory().path(Chat()), "chat object works")
+        self.assertEqual(self.chat_path, self.factory.path(self.chat_id), "str id works")
+        self.assertEqual(self.chat_path, self.factory.path(uuid.UUID(self.chat_id)), "uuid works")
+        self.assertEqual(self.chat_path, self.factory.path(models.Chat()), "chat object works")
 
     def test_create(self):
         """
         Test create chat.
         """
-        ChatFactory().create()
+        self.factory.create()
         with open(self.chat_path, "rb") as file:
             chat = pickle.load(file)
         self.assertEqual(self.chat_id, str(chat.id), "created chat has correct id")
@@ -41,8 +41,8 @@ class TestChatFactory(tests.DatabaseTestCase):
         Test retrieve chat.
         """
         with open(self.chat_path, "wb") as file:
-            pickle.dump(Chat(), file)
-        chat = ChatFactory().retrieve(self.chat_id)
+            pickle.dump(models.Chat(), file)
+        chat = self.factory.retrieve(self.chat_id)
         self.assertEqual(self.chat_id, str(chat.id), "retrieved chat has correct id")
         self.assertEqual([], chat.messages, "retrieved chat has no messages")
 
@@ -51,10 +51,10 @@ class TestChatFactory(tests.DatabaseTestCase):
         Test delete chat.
         """
         with open(self.chat_path, "wb") as file:
-            pickle.dump(Chat(), file)
+            pickle.dump(models.Chat(), file)
         os_path = pathlib.Path(self.chat_path)
         self.assertTrue(os_path.exists())
-        ChatFactory().delete(self.chat_id)
+        self.factory.delete(self.chat_id)
         self.assertFalse(os_path.exists())
 
 
@@ -72,8 +72,8 @@ class TestChat(tests.DatabaseTestCase):
         """
         Test chat can save to database with a message appended to it.
         """
-        chat = Chat()
-        chat.append("Hello world!", Chat.USER)
+        chat = models.Chat()
+        chat.append("Hello world!", models.Chat.USER)
         os_path = pathlib.Path(self.chat_path)
         self.assertFalse(os_path.exists())
         chat.save()
@@ -82,14 +82,14 @@ class TestChat(tests.DatabaseTestCase):
             saved_chat = pickle.load(file)
         self.assertEqual(1, len(saved_chat.messages), "chat contains message")
         self.assertEqual("Hello world!", saved_chat.messages[0].content, "message content correct")
-        self.assertEqual(Chat.USER, saved_chat.messages[0].role, "message role is user")
+        self.assertEqual(models.Chat.USER, saved_chat.messages[0].role, "message role is user")
 
     def test_copy(self):
         """
         Test chat can perform a deep-copy.
         """
-        chat1 = Chat()
-        chat1.append("Hello world", Chat.USER)
+        chat1 = models.Chat()
+        chat1.append("Hello world", models.Chat.USER)
         chat2 = chat1.copy()
         self.assertNotEqual(chat1.id, chat2.id, "different database id")
         self.assertNotEqual(id(chat1), id(chat2), "different object instances")

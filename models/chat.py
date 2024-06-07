@@ -33,7 +33,6 @@ class ChatFactory(utils.Factory):
             with open(self.path(id), "rb") as file:
                 return pickle.load(file)
         except FileNotFoundError as e:
-            logger.warning(f"No chat found at = {self.path(id)}", exc_info=e)
             return None
 
     def delete(self, id):
@@ -42,15 +41,6 @@ class ChatFactory(utils.Factory):
         """
         path = pathlib.Path(self.path(id))
         path.unlink(missing_ok=True)
-
-    def find_or_create(self, id):
-        """
-        Find a chat with the given id in the database,
-        or ctreate one if none exists.
-        """
-        if chat := self.retrieve(id):
-            return chat
-        return self.create()
 
 
 class Chat:

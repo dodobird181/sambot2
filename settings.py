@@ -9,8 +9,8 @@ TEMPLATES_FILEPATH = "templates"
 
 PICKLE_DB_PATH = ".pkldb/"
 SESSION_CHAT_KEY = "sambot-chat-session"
-LOGGING_LEVEL = logging.INFO
-ENABLE_DUMMY_RESPONSES = True
+LOGGING_LEVEL = logging.DEBUG
+ENABLE_DUMMY_RESPONSES = False
 
 try:
     # default is to pull secrets from prod shell environment
