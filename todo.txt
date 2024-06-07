@@ -1,0 +1,7 @@
+* migrate HTML webpage with simple css and js
+    - use flexbox for this shiddd
+* migrate backend code that simply interfaces with chat gpt directly
+* add ratelimiting do i dont get wrecked
+* add pills with recommended questions to ask the bot
+    - once you click it auto sends in the chat
+
