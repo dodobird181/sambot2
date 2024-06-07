@@ -1,5 +1,0 @@
-{% for message in chat.messages %}
-    {% if message.role != "system" %}
-        <li class="{{ message.role }}">{{ message.content }}</li>
-    {% endif %}
-{% endfor %}

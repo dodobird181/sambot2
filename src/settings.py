@@ -1,0 +1,1 @@
+from _env_secrets import FLASK_SECRET_KEY
