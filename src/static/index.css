@@ -6,3 +6,28 @@ body, input {
     font-style: normal;
 }
 
+.input-container {
+    display: inline-block;
+}
+
+.growing-input {
+    width: 2ch; /* Initial width to fit at least one character */
+    min-width: 120px; /* Minimum width of the input */
+    padding: 8px;
+    font-size: 16px;
+    box-sizing: border-box;
+    transition: width 0.2s ease-out; /* Smooth transition for width change */
+    border: 1px solid #ccc;
+    border-radius: 4px;
+}
+
+.hidden {
+    visibility: hidden;
+    white-space: nowrap;
+    position: absolute;
+    top: 0;
+    left: 0;
+}
+
+
+
