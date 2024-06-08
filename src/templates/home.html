@@ -12,11 +12,14 @@
         <link rel="icon" href="{{ url_for('static', filename='favicon.png') }}">
     </head>
     <body>
-        <div class="centered-container">
-            <h1 class="header">hi, i'm sam morris</h1>
-            <div><ul class="ordered-list" id="stream-container"></ul></div>
-            <div class="gradient-overlay"></div>
-            <input class='input-box' type="text" id="input-box" placeholder="ask me anything">
+        <h1>hi, i'm sam morris</h1>
+        {% for message in messages %}
+            <li class="{{ message.role }}">{{ message.content }}</li>
+        {% endfor %}
+        <div class="input-container">
+            <input class="growing-input" type="text" placeholder="ask me anything">
+            <span id="text-width-calculator" class="hidden"></span>
         </div>
+
     </body>
 </html>

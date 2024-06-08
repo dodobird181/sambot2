@@ -7,7 +7,12 @@ app.secret_key = settings.FLASK_SECRET_KEY
 
 @app.route("/")
 def home():
-    return flask.render_template("home.html")
+    return flask.render_template("home.html", messages=[
+        {
+            'role': 'assistant',
+            'content': 'hello world!',
+        },
+    ])
 
 
 if __name__ == "__main__":
