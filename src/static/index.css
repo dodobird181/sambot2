@@ -19,6 +19,27 @@ body, input {
     transition: width 0.2s ease-out; /* Smooth transition for width change */
     border: 1px solid #ccc;
     border-radius: 4px;
+    margin: 20px 20px;
+}
+
+.pill-container {
+    display: flex;
+}
+
+.pill {
+    border: grey 2px solid;
+    color: grey;
+    padding: 5px;
+    border-radius: 5px;
+    width: auto;
+    margin: 0 10px;
+    cursor: pointer;
+    transition: background-color 0.3s ease;
+}
+
+.pill:hover {
+    background-color: blue; /* Change the background color on hover */
+    color: white; /* Optional: Change the text color on hover for better contrast */
 }
 
 .hidden {
@@ -28,6 +49,3 @@ body, input {
     top: 0;
     left: 0;
 }
-
-
-

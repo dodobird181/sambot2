@@ -13,13 +13,19 @@
     </head>
     <body>
         <h1>hi, i'm sam morris</h1>
-        {% for message in messages %}
-            <li class="{{ message.role }}">{{ message.content }}</li>
-        {% endfor %}
-        <div class="input-container">
-            <input class="growing-input" type="text" placeholder="ask me anything">
-            <span id="text-width-calculator" class="hidden"></span>
+        <ul>
+            {% for message in messages %}
+                <li class="{{ message.role }}">{{ message.content }}</li>
+            {% endfor %}
+        </ul>
+        <div class="pill-container">
+            {% for pill in pills %}
+                <p class="pill">{{ pill }}</p>
+            {% endfor %}
         </div>
-
+        <div class="input-container">
+            <input id="inputBox" class="growing-input" type="text" placeholder="ask me anything">
+            <span id="textWidthCalculator" class="hidden"></span>
+        </div>
     </body>
 </html>
