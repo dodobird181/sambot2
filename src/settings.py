@@ -1,1 +1,1 @@
-from _env_secrets import FLASK_SECRET_KEY
+from _env_secrets import FLASK_SECRET_KEY, OPENAI_API_KEY
