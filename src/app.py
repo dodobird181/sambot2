@@ -13,18 +13,25 @@ app.config['SESSION_COOKIE_SAMESITE'] = 'Strict'
 app.config['SESSION_COOKIE_SECURE'] = True
 
 
-@app.route("/")
+def html_gen_to_event_stream(html_gen):
+    """Helper method that converts an HTML generator to a server-side-event stream."""
+    def sse_gen():
+        for html_data in html_gen:
+            yield f"data: {html_data}\n\n"
+        yield f"data: STOP\n\n"
+    return flask.stream_with_context(sse_gen())
+
+
+app.route("/")
 def home():
 
     # get current messages from session (or create a new one)
     try:
-        messages_id = flask.session.get(settings.SESSION_MESSAGES_KEY, None)
-        messages = Messages.load_from_id(messages_id)
-    except BadId as e:
-        if isinstance(e, NotFound):
-            print(f'Coundn\'t find messages with id {messages_id}.')
-        messages = Messages.create('TODO: DEFAULT SYSTEM MESSAGE')
-    flask.session[settings.SESSION_MESSAGES_KEY] = str(messages_id)
+        id = flask.session.get(settings.SESSION_MESSAGES_KEY, None)
+        messages = Messages.load_from_id(id)
+    except BadId:
+        messages = Messages.create('TODO: DUMMY SYSTEM MESSAGE')
+    flask.session[settings.SESSION_MESSAGES_KEY] = str(messages.id)
 
     # generate suggestion pills
     pills = DisplayPills(messages, dummy=True)
@@ -50,13 +57,13 @@ def submit():
     system = system.generate()
 
     # define messages stream
-    def generate_messages_stream(dummy=False):
+    def html_messages_gen(dummy=False):
         messages.append(Message(role='user', content=user_content))
         messages.append(Message(role='assistant', content=''))
         if dummy:
             for token in 'Hello world! This is a dummy chat gpt response for sambot :)':
                 old_msg = messages[len(messages) - 1]
-                new_msg = m.Message(role='assistant', content=old_msg.content + token)
+                new_msg = Message(role='assistant', content=old_msg.content + token)
                 messages[len(messages) - 1] = new_msg
                 yield flask.render_template('partial_messages.html', messages=messages)
                 time.sleep(0.2)
@@ -69,8 +76,8 @@ def submit():
             messages[len(messages) - 1] = new_msg
             yield flask.render_template('partial_messages.html', messages=messages)
 
-    for token in openai.get_completion(messages=messages, model='gpt-4o', stream=True):
-        ...
+    # TODO: return flask stream event mime type
+    return flask.Response(response=html_gen_to_event_stream(html_messages_gen()), mimetype="text/event-stream")
 
 if __name__ == "__main__":
     # For debugging only, not used in prod.
