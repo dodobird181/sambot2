@@ -4,6 +4,8 @@ from models import Message, DisplayPills, Messages, BadId, NotFound, SystemMessa
 from apis import openai as openai
 import time
 import bleach
+import html
+import re
 from flask_wtf.csrf import CSRFProtect
 
 app = flask.Flask(__name__)
@@ -17,13 +19,19 @@ def html_gen_to_event_stream(html_gen):
     """Helper method that converts an HTML generator to a server-side-event stream."""
     def sse_gen():
         for html_data in html_gen:
-            yield f"data: {html_data}\n\n"
+
+            # remove newline chars
+            cleaned_html = html_data.replace('\n', ' ').replace('\r', ' ')
+
+            print(cleaned_html + "ENDING\n\n\n")
+            yield f"data: {cleaned_html}\n\n"
         yield f"data: STOP\n\n"
     return flask.stream_with_context(sse_gen())
 
 
 @app.route("/")
 def home():
+
 
     # get current messages from session (or create a new one)
     try:
