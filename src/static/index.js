@@ -11,7 +11,7 @@ document.addEventListener("DOMContentLoaded", () => {
     inputBox.addEventListener('input', function() {
         textWidthCalculator.textContent = this.value;
         const width = textWidthCalculator.offsetWidth;
-        this.style.width = (width + 20) + 'px';
+        this.style.width = (width + 30) + 'px';
     });
 
     // submit when pill clicked
@@ -19,28 +19,30 @@ document.addEventListener("DOMContentLoaded", () => {
         pill.addEventListener('click', () => {
             inputBox.value = pill.textContent;
             inputBox.dispatchEvent(new Event('input'));
-            // TODO submit here once submission is built
+            submitUserInput();
         });
     });
 
     // submit when enter pressed
-    inputBox.addEventListener('keypressed', (event) => {
+    inputBox.addEventListener('keydown', (event) => {
         if (event.key === 'Enter') {
             event.preventDefault(); // Prevent the default Enter key behavior
             submitUserInput();
+            console.log('Submitted!');
         }
     });
 
     // submit logic
     function submitUserInput() {
-        alert(`You submitted: ${userContent}`);
+        const userContent = inputBox.value;
         inputBox.value = ''; // Clear the input field
 
-        const source = new EventSource('/submit?user_content=' + inputBox.value);
+        const source = new EventSource('/submit?user_content=' + userContent);
         source.onmessage = function(event) {
             if (event.data === 'STOP'){
-                stream.close();
+                source.close();
             } else {
+                console.log(event.data);
                 const parser = new DOMParser();
                 const doc = parser.parseFromString(event.data, 'text/html');
                 const newContent = doc.body.innerHTML;  // assumes stream data wrapped in body

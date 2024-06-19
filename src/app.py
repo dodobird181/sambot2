@@ -22,7 +22,7 @@ def html_gen_to_event_stream(html_gen):
     return flask.stream_with_context(sse_gen())
 
 
-app.route("/")
+@app.route("/")
 def home():
 
     # get current messages from session (or create a new one)
@@ -34,7 +34,7 @@ def home():
     flask.session[settings.SESSION_MESSAGES_KEY] = str(messages.id)
 
     # generate suggestion pills
-    pills = DisplayPills(messages, dummy=True)
+    pills = DisplayPills(messages)
     pills.generate()
 
     # render homepage
@@ -53,20 +53,20 @@ def submit():
     # generate a system message
     messages_id = flask.session.get(settings.SESSION_MESSAGES_KEY, None)
     messages = Messages.load_from_id(messages_id)
-    system = SystemMessage(messages, user_content, dummy=True)
+    system = SystemMessage(messages, user_content)
     system = system.generate()
 
     # define messages stream
-    def html_messages_gen(dummy=False):
+    def html_messages_gen(dummy=settings.DEBUG):
         messages.append(Message(role='user', content=user_content))
         messages.append(Message(role='assistant', content=''))
         if dummy:
-            for token in 'Hello world! This is a dummy chat gpt response for sambot :)':
+            for token in 'Hello world! This is a dummy chat gpt response for sambot :)'.split(' '):
                 old_msg = messages[len(messages) - 1]
-                new_msg = Message(role='assistant', content=old_msg.content + token)
+                new_msg = Message(role='assistant', content=old_msg.content + token + ' ')
                 messages[len(messages) - 1] = new_msg
                 yield flask.render_template('partial_messages.html', messages=messages)
-                time.sleep(0.2)
+                time.sleep(0.1)
             return  # prevent real code from executing
 
         # real api call

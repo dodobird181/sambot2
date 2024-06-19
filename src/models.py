@@ -5,6 +5,9 @@ import json
 import apis.openai as openai
 import os
 import settings
+import logger
+
+_logger = logger.get_logger(__name__)
 
 
 class DbError(Exception):
@@ -69,13 +72,20 @@ class Messages(UserList):
 
     @classmethod
     def load_from_id(cls, id):
-        if id is None:
+        if not id:
+            _logger.debug('Could not load messages using None id.')
             raise IdNone
         try:
             with open(cls._filename(id), 'r') as file:
-                return cls(key=cls.__init_key, **json.load(file))
+                data = json.load(file)
+                initlist = [Message(role=m['role'], content=m['content']) for m in data['initlist']]
+                instance = cls(key=cls.__init_key, id=data['id'], initlist=initlist)
+                _logger.debug(f'Loaded messages from id {id}.')
+                return instance
         except FileNotFoundError as e:
-            raise NotFound(f'Could not find messages with id {id}.') from e
+            err_msg = f'Could not find messages with id {id}.'
+            _logger.warn(err_msg)
+            raise NotFound(err_msg) from e
 
     @classmethod
     def create(cls, system: str):
@@ -120,7 +130,7 @@ class Messages(UserList):
 class DisplayPills(UserList):
     """Wraps messages for generating suggestion pill text."""
 
-    def __init__(self, messages, dummy=False):
+    def __init__(self, messages, dummy=settings.DEBUG):
         super().__init__()
         self.messages = messages.deep_copy()
         self.dummy = dummy
@@ -134,13 +144,13 @@ class DisplayPills(UserList):
             'on the current conversation. Format your response using semicolons to separate ' + \
             'each question like so: question;question;question'
         self.messages[0] = Message(role='system', content=system)
-        self.data = openai.get_completion(self.messages.to_gpt(), 'gpt-4').split(';')
+        self.data = openai.get_completion(self.messages.to_gpt(), 'gpt-3.5-turbo').split(';')
 
 
 class SystemMessage:
     """Wraps messages to generate a system message."""
 
-    def __init__(self, messages, user_content, dummy=False):
+    def __init__(self, messages, user_content, dummy=settings.DEBUG):
         self.messages = messages
         self.user_content = user_content
         self.dummy = dummy
