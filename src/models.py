@@ -3,10 +3,37 @@ from uuid import uuid4
 from collections import UserList
 import json
 import apis.openai as openai
+import os
+import settings
 
 
 class DbError(Exception):
-    """Something went wrong while reading, or writing, to the database."""
+    """Something went wrong while reading or writing to the database."""
+    ...
+
+
+class ReadError(DbError):
+    """Something went wrong while reading data from the database."""
+    ...
+
+
+class WriteError(DbError):
+    """Something went wrong while writing data to the database."""
+    ...
+
+
+class BadId(ReadError):
+    """The provided id for database reading is either missing or malformed."""
+    ...
+
+
+class NotFound(BadId):
+    """The id wasn't found in the database."""
+    ...
+
+
+class IdNone(BadId):
+    """The provided id is None."""
     ...
 
 
@@ -27,21 +54,28 @@ class Messages(UserList):
             raise ValueError('Please use factory method to initialize a Messages object!')
         self.id = id
 
-    @classmethod
-    def _todict(cls, messages):
+    @staticmethod
+    def _todict(messages):
         """Return a dictionary representation of the given Messages object."""
         return {
             'id': messages.id,
             'initlist': [dataclasses.asdict(msg) for msg in messages.data],
         }
 
+    @staticmethod
+    def _filename(id):
+        """The filename for storing a messages object with the given id."""
+        return f'{settings.LOCAL_MESSAGES_DIR}/msg-{id}.json'
+
     @classmethod
     def load_from_id(cls, id):
+        if id is None:
+            raise IdNone
         try:
-            with open(f'data/messages/msg-{id}.json', 'r') as file:
+            with open(cls._filename(id), 'r') as file:
                 return cls(key=cls.__init_key, **json.load(file))
-        except Exception as e:
-            raise DbError(f'Failed to load Messages: {e}.') from e
+        except FileNotFoundError as e:
+            raise NotFound(f'Could not find messages with id {id}.') from e
 
     @classmethod
     def create(cls, system: str):
@@ -49,15 +83,21 @@ class Messages(UserList):
             id = str(uuid4())
             initlist = [Message(role='system', content=system)]
             instance = cls(key=cls.__init_key, id=id, initlist=initlist)
-            with open(f'data/messages/msg-{id}.json', "w") as file:
+
+            # make sure messages directory exists
+            os.makedirs(settings.LOCAL_MESSAGES_DIR, exist_ok=True)
+
+
+            with open(cls._filename(id), "w") as file:
                 json.dump(cls._todict(instance), file)
                 return instance
+
         except Exception as e:
             raise DbError(f'Failed to create Messages: {e}.') from e
 
     def save(self):
         try:
-            with open(f'data/messages/msg-{self.id}.json', "w") as file:
+            with open(self._filename(self.id), "w") as file:
                 json.dump(self._todict(self), file)
                 return self
         except Exception as e:
@@ -95,3 +135,20 @@ class DisplayPills(UserList):
             'each question like so: question;question;question'
         self.messages[0] = Message(role='system', content=system)
         self.data = openai.get_completion(self.messages.to_gpt(), 'gpt-4').split(';')
+
+
+class SystemMessage:
+    """Wraps messages to generate a system message."""
+
+    def __init__(self, messages, user_content, dummy=False):
+        self.messages = messages
+        self.user_content = user_content
+        self.dummy = dummy
+
+    def generate(self):
+        """
+        Generate a system message
+        """
+        if self.dummy:
+            return 'DUMMY SYSTEM MESSAGE'
+        return 'TODO: GENERATE A REAL SYSTEM MESSAGE HERE'

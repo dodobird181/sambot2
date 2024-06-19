@@ -13,7 +13,7 @@
     </head>
     <body>
         <h1>hi, i'm sam morris</h1>
-        <ul>
+        <ul id="messagesContainer">
             {% for message in messages %}
                 <li class="{{ message.role }}">{{ message.content }}</li>
             {% endfor %}
