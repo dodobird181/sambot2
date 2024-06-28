@@ -16,17 +16,20 @@ app.config['SESSION_COOKIE_SECURE'] = True
 
 
 def html_gen_to_event_stream(html_gen):
-    """Helper method that converts an HTML generator to a server-side-event stream."""
+    """Convert an HTML generator to a server-side-event stream."""
     def sse_gen():
         for html_data in html_gen:
-
-            # remove newline chars
-            cleaned_html = html_data.replace('\n', ' ').replace('\r', ' ')
-
-            print(cleaned_html + "ENDING\n\n\n")
-            yield f"data: {cleaned_html}\n\n"
+            # remove newlines and carrige returns that interfer with streaming
+            formatted_html = html_data.replace('\n', ' ').replace('\r', ' ')
+            yield f"data: {formatted_html}\n\n"
         yield f"data: STOP\n\n"
     return flask.stream_with_context(sse_gen())
+
+
+def messages_gen_to_html_gen(messages_gen):
+    """Convert a `Messages` generator to an HTML generator representing those `Messages`."""
+    for messages in messages_gen:
+        yield flask.render_template('partial_messages.html', messages=messages)
 
 
 @app.route("/")
@@ -68,6 +71,7 @@ def submit():
     def html_messages_gen(dummy=settings.DEBUG):
         messages.append(Message(role='user', content=user_content))
         messages.append(Message(role='assistant', content=''))
+
         if dummy:
             for token in 'Hello world! This is a dummy chat gpt response for sambot :)'.split(' '):
                 old_msg = messages[len(messages) - 1]
@@ -75,6 +79,7 @@ def submit():
                 messages[len(messages) - 1] = new_msg
                 yield flask.render_template('partial_messages.html', messages=messages)
                 time.sleep(0.1)
+            messages.save()
             return  # prevent real code from executing
 
         # real api call
@@ -83,8 +88,9 @@ def submit():
             new_msg = Message(role='assistant', content=old_msg.content + token)
             messages[len(messages) - 1] = new_msg
             yield flask.render_template('partial_messages.html', messages=messages)
+        messages.save()
 
-    # TODO: return flask stream event mime type
+    # return flask SSE stream
     return flask.Response(response=html_gen_to_event_stream(html_messages_gen()), mimetype="text/event-stream")
 
 if __name__ == "__main__":
