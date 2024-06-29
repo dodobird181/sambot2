@@ -6,6 +6,7 @@ import apis.openai as openai
 import os
 import settings
 import logger
+import asyncio
 
 _logger = logger.get_logger(__name__)
 
@@ -155,10 +156,11 @@ class SystemMessage:
         self.user_content = user_content
         self.dummy = dummy
 
-    def generate(self):
+    async def generate(self):
         """
         Generate a system message
         """
         if self.dummy:
+            await asyncio.sleep(2)  # fake delay for testing
             return 'DUMMY SYSTEM MESSAGE'
         return 'TODO: GENERATE A REAL SYSTEM MESSAGE HERE'
