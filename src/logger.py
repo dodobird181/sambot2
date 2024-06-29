@@ -36,7 +36,9 @@ class LogTimeContextManager:
         Compute end time and log.
         """
         self.elapsed_time = time.time() - self.start_time
-        self.log_fn(f"Finished {self.message.lower()} in {self.elapsed_time:.2f} seconds.")
+        self.log_fn(
+            f"Finished {self.message.lower()} in {self.elapsed_time:.2f} seconds."
+        )
         # Return False to propagate the exception, if any occurred
         return False
 

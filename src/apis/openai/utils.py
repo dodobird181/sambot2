@@ -17,7 +17,10 @@ def best_similarity(user_input, *sentences):
         embeddings = await asyncio.gather(
             # get all sentence embeddings the same time
             asyncio.to_thread(openai.get_embedding, user_input),
-            *[asyncio.to_thread(openai.get_embedding, sentence) for sentence in sentences]
+            *[
+                asyncio.to_thread(openai.get_embedding, sentence)
+                for sentence in sentences
+            ]
         )
         user_embedding = embeddings[0]
         sentence_embeddings = embeddings[1:]
