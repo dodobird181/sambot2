@@ -15,11 +15,15 @@ app.config["SESSION_COOKIE_SAMESITE"] = "Strict"
 app.config["SESSION_COOKIE_SECURE"] = True
 
 
-def html_gen_to_event_stream(html_gen):
-    """Convert an HTML generator to a server-side-event stream."""
+def messages_gen_to_event_stream(messages_gen):
+    """Convert a `Messages` generator to a server-side-event stream."""
+
+    def html_gen():
+        for messages in messages_gen:
+            yield flask.render_template("partial_messages.html", messages=messages)
 
     def sse_gen():
-        for html_data in html_gen:
+        for html_data in html_gen():
             # Remove newlines and carriage returns that interfere with streaming
             formatted_html = html_data.replace("\n", " ").replace("\r", " ")
             yield f"data: {formatted_html}\n\n"
@@ -28,12 +32,6 @@ def html_gen_to_event_stream(html_gen):
     return flask.Response(
         flask.stream_with_context(sse_gen()), mimetype="text/event-stream"
     )
-
-
-def messages_gen_to_html_gen(messages_gen):
-    """Convert a `Messages` generator to an HTML generator representing those `Messages`."""
-    for messages in messages_gen:
-        yield flask.render_template("partial_messages.html", messages=messages)
 
 
 def string_gen_to_messages_gen(string_gen, messages, user_content):
@@ -136,13 +134,11 @@ def submit():
 
     # Stream back data to the client
     string_gen = debug_string_gen if settings.DEBUG else openai_string_gen
-    return html_gen_to_event_stream(
-        messages_gen_to_html_gen(
-            string_gen_to_messages_gen(
-                string_gen=string_gen,
-                messages=messages,
-                user_content=user_content,
-            ),
+    return messages_gen_to_event_stream(
+        string_gen_to_messages_gen(
+            string_gen=string_gen,
+            messages=messages,
+            user_content=user_content,
         ),
     )
 
