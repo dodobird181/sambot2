@@ -112,7 +112,9 @@ def home():
 
     # Render homepage
     return flask.render_template(
-        "home.html", messages=messages.to_display(), pills=pills
+        template_name_or_list="home.html",
+        messages=messages.to_display(),
+        pills=pills,
     )
 
 
