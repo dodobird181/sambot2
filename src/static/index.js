@@ -28,7 +28,6 @@ document.addEventListener("DOMContentLoaded", () => {
         if (event.key === 'Enter') {
             event.preventDefault(); // Prevent the default Enter key behavior
             submitUserInput();
-            console.log('Submitted!');
         }
     });
 
@@ -42,7 +41,6 @@ document.addEventListener("DOMContentLoaded", () => {
             if (event.data === 'STOP'){
                 source.close();
             } else {
-                console.log(event.data);
                 const parser = new DOMParser();
                 const doc = parser.parseFromString(event.data, 'text/html');
                 const newContent = doc.body.innerHTML;  // assumes stream data wrapped in body
