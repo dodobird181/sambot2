@@ -39,7 +39,7 @@ def messages_gen_to_event_stream(messages_gen):
     )
 
 
-def string_gen_to_messages_gen(string_gen, messages, user_content, system_message):
+def string_gen_to_messages_gen(string_gen, messages, user_content, system_message_content):
     """
     Convert a string generator into a `Messages` generator using the given `Messages` object.
     NOTE: side-effects include mutating the `Messages` object, saving the `Messages` object, and
@@ -56,7 +56,7 @@ def string_gen_to_messages_gen(string_gen, messages, user_content, system_messag
     # Generate system message and stream ellipsis
     loop = asyncio.new_event_loop()
     asyncio.set_event_loop(loop)
-    generate_system_message_task = loop.create_task(system_message.generate())
+    generate_system_message_task = loop.create_task(system_message_content.generate())
 
     while not generate_system_message_task.done():
         old_msg = messages[len(messages) - 1]
@@ -68,13 +68,16 @@ def string_gen_to_messages_gen(string_gen, messages, user_content, system_messag
         loop.run_until_complete(asyncio.sleep(0.5))
 
     try:
-        system_message = loop.run_until_complete(generate_system_message_task)
+        system_message_content = loop.run_until_complete(generate_system_message_task)
     except openai.APIConnectionError:
         # set fake system message and notify the user
         # NOTE: This is kind of a hack because technically this call could succeed but
         #       the next call to openai could fail to connect and this message wouldn't show up...
         string_gen = connection_error_string_gen
-        system_message = SystemMessage(messages, user_content, dummy=True)
+        system_message_content = SystemMessage(messages, user_content, dummy=True)
+
+    # set system message
+    messages[0] = Message(role='system', content=system_message_content)
 
     # Clean assistant message of any leftover '.'s
     messages[len(messages) - 1] = Message(role="assistant", content="")
@@ -82,7 +85,7 @@ def string_gen_to_messages_gen(string_gen, messages, user_content, system_messag
     # Transform generated strings into messages
     for token in string_gen(messages):
         old_msg = messages[len(messages) - 1]
-        new_msg = Message(role="assistant", content=old_msg.content + token + " ")
+        new_msg = Message(role="assistant", content=old_msg.content + token)
         messages[len(messages) - 1] = new_msg
         yield messages
     messages.save()
@@ -92,7 +95,7 @@ def debug_string_gen(messages):
     """Generate string tokens for debugging purposes."""
     debug_message = "Hello world! This is a dummy chat gpt response for sambot :)"
     for token in debug_message.split(" "):
-        yield token
+        yield token + " "
         time.sleep(0.1)
 
 
@@ -103,6 +106,10 @@ def openai_string_gen(messages):
         model="gpt-4o",
         stream=True,
     ):
+        # TODO: Action parsing -- create functions and tell GPT4-o that it has the ability to perform
+        #       certain arbitrary actions if the user requests it. Then, parse out these actions from
+        #       chat gpt's response and call the corresponding functions. NOTE: Maybe send data back to
+        #       chat gpt so it can confirm that the actions were executed properly. Define a "meta-language?"
         yield token
 
 
@@ -112,7 +119,7 @@ def connection_error_string_gen(message):
     connection_error_message += 'the ChatGPT API. You can check https://status.openai.com/, '
     connection_error_message += 'or test your internet connection and try again!'
     for token in connection_error_message.split(' '):
-        yield token
+        yield token + " "
         time.sleep(0.1)
 
 
@@ -156,14 +163,14 @@ def submit():
         flask.abort(404)
 
     # Stream back data to the client
-    system_message = SystemMessage(messages, user_content, dummy=False)
+    system_message = SystemMessage(messages, user_content)
     string_gen = debug_string_gen if settings.DEBUG else openai_string_gen
     return messages_gen_to_event_stream(
         string_gen_to_messages_gen(
             string_gen=string_gen,
             messages=messages,
             user_content=user_content,
-            system_message=system_message,
+            system_message_content=system_message,
         ),
     )
 

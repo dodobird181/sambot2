@@ -163,14 +163,17 @@ class DisplayPills(UserList):
                 "Tell me about your work experience?",
             ]
             return
+        self.data = []
+        return  # TODO: This is for testing, remove me to actually generate pills!
         system = (
-            "Generate 2-3 suggested questions for the user to ask the assistant based "
-            + "on the current conversation. Format your response using semicolons to separate "
-            + "each question like so: question;question;question"
+            "Generate 2-3 suggested questions for the user that are 3-10 words long to ask the assistant based "
+            + "on your content. Format your response using semicolons to separate "
+            + "each question like so: question;question;question\n\n Here is the content:"
+            + f"\n\n {resources.INFO}"
         )
         self.messages[0] = Message(role="system", content=system)
         self.data = openai.get_completion(
-            self.messages.to_gpt(), "gpt-3.5-turbo"
+            self.messages.to_gpt(), "gpt-4o"
         ).split(";")
 
 
@@ -206,11 +209,12 @@ class SystemMessage:
         system_gen_messages = Messages.create('You are a helpful assistant.')
         system_gen_messages.append(Message(role='user', content=system_gen_prompt))
 
-        system_message_str = await openai.async_get_completion(
+        system_knowledge = await openai.async_get_completion(
             messages=system_gen_messages.to_gpt(),
             model="gpt-3.5-turbo",
         )
         system_gen_messages.delete()  # delete the temporary prompt message
-        _logger.debug(f'Generated system message: {system_message_str}')
-        return system_message_str
+
+        _logger.debug(f'Generated system message "knowledge":\n{system_knowledge}')
+        return f"{resources.STYLE}\n#Knowledge\n{system_knowledge}"
 
