@@ -11,29 +11,6 @@ import logger
 _logger = logger.get_logger(__name__)
 
 
-"""
-TODO: Remove me once it's confirmed that async shit works on the frontend...
-messages = [
-    {"role": "system", "content": "You are a helpful assistant."},
-    {"role": "user", "content": "Who won the world series in 2020?"}
-]
-
-print("sync stream = False...")
-res1 = ai.get_completion(messages, 'gpt-3.5-turbo', stream=False)
-print(res1)
-
-print("async call...")
-res_async = asyncio.run(ai.async_get_completion(messages, 'gpt-3.5-turbo'))
-print(res_async)
-
-print("sync stream = True...")
-for t in ai.get_completion(messages, 'gpt-3.5-turbo', stream=True):
-    print(f'sync token: {t}')
-
-exit()
-"""
-
-
 app = flask.Flask(__name__)
 app.secret_key = settings.FLASK_SECRET_KEY
 csrf = CSRFProtect(app)
@@ -94,9 +71,9 @@ def string_gen_to_messages_gen(string_gen, messages, user_content, system_messag
         system_message = loop.run_until_complete(generate_system_message_task)
     except openai.APIConnectionError:
         # set fake system message and notify the user
-        msg = 'Whoops! It looks like there\'s been an error connecting to the ChatGPT API. You can '
-        msg += 'check https://status.openai.com/, or test your internet connection and try again!'
-        string_gen = lambda _: (x for x in msg.split(' '))
+        # NOTE: This is kind of a hack because technically this call could succeed but
+        #       the next call to openai could fail to connect and this message wouldn't show up...
+        string_gen = connection_error_string_gen
         system_message = SystemMessage(messages, user_content, dummy=True)
 
     # Clean assistant message of any leftover '.'s
@@ -127,6 +104,16 @@ def openai_string_gen(messages):
         stream=True,
     ):
         yield token
+
+
+def connection_error_string_gen(message):
+    """Generate string tokens for when a connection error occurrs."""
+    connection_error_message = 'Whoops! It looks like there\'s been an error connecting to '
+    connection_error_message += 'the ChatGPT API. You can check https://status.openai.com/, '
+    connection_error_message += 'or test your internet connection and try again!'
+    for token in connection_error_message.split(' '):
+        yield token
+        time.sleep(0.1)
 
 
 @app.route("/")
@@ -169,7 +156,6 @@ def submit():
         flask.abort(404)
 
     # Stream back data to the client
-    _logger.error('RETURNING NORMAL MESSAGE')
     system_message = SystemMessage(messages, user_content, dummy=False)
     string_gen = debug_string_gen if settings.DEBUG else openai_string_gen
     return messages_gen_to_event_stream(

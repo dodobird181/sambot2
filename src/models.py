@@ -187,6 +187,7 @@ class SystemMessage:
 
         if len(self.messages) <= 3:
             # first set of messages, 1 system + 1 user + 1 assistant == 3
+            _logger.debug(f'Returning default system message: {resources.DEFAULT_SYS_MSG[:50]}...')
             return resources.DEFAULT_SYS_MSG
 
         # generate system message using gpt-3.5-turbo
