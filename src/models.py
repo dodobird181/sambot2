@@ -117,7 +117,7 @@ class Messages(UserList):
                 return instance
 
         except Exception as e:
-            raise DbError(f"Failed to create Messages: {e}.") from e
+            raise WriteError(f"Failed to create Messages: {e}.") from e
 
     def save(self):
         try:
@@ -125,7 +125,13 @@ class Messages(UserList):
                 json.dump(self._todict(self), file)
                 return self
         except Exception as e:
-            raise DbError(f"Failed to save Messages: {e}.") from e
+            raise WriteError(f"Failed to save Messages: {e}.") from e
+
+    def delete(self):
+        try:
+            os.remove(self._filename(self.id))
+        except Exception as e:
+            raise WriteError(f'Failed to delete messages: {e}.') from e
 
     def deep_copy(self):
         """Return a deep-copy of this Messages object."""
@@ -204,6 +210,7 @@ class SystemMessage:
             messages=system_gen_messages.to_gpt(),
             model="gpt-3.5-turbo",
         )
+        system_gen_messages.delete()  # delete the temporary prompt message
         _logger.debug(f'Generated system message: {system_message_str}')
         return system_message_str
 
