@@ -216,5 +216,5 @@ class SystemMessage:
         system_gen_messages.delete()  # delete the temporary prompt message
 
         _logger.debug(f'Generated system message "knowledge":\n{system_knowledge}')
-        return f"{resources.STYLE}\n#Knowledge\n{system_knowledge}"
+        return f"{resources.STYLE}\n#Knowledge\n{system_knowledge}\n\nBegin now."
 
