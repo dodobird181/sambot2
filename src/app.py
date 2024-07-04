@@ -106,10 +106,6 @@ def openai_string_gen(messages):
         model="gpt-4o",
         stream=True,
     ):
-        # TODO: Action parsing -- create functions and tell GPT4-o that it has the ability to perform
-        #       certain arbitrary actions if the user requests it. Then, parse out these actions from
-        #       chat gpt's response and call the corresponding functions. NOTE: Maybe send data back to
-        #       chat gpt so it can confirm that the actions were executed properly. Define a "meta-language?"
         yield token
 
 
