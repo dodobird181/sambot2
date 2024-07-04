@@ -7,6 +7,7 @@ import os
 import settings
 import logger
 import asyncio
+import resources
 
 _logger = logger.get_logger(__name__)
 
@@ -179,7 +180,29 @@ class SystemMessage:
         """
         Generate a system message
         """
+
         if self.dummy:
             await asyncio.sleep(2)  # fake delay for testing
             return "DUMMY SYSTEM MESSAGE"
-        return "TODO: GENERATE A REAL SYSTEM MESSAGE HERE"
+
+        if len(self.messages) <= 3:
+            # first set of messages, 1 system + 1 user + 1 assistant == 3
+            return resources.DEFAULT_SYS_MSG
+
+        # generate system message using gpt-3.5-turbo
+        system_gen_prompt = "Summarize relevant information using bullet points from the following "
+        system_gen_prompt += "content to answer the given quesiton. Keep your summary as short as "
+        system_gen_prompt += "possible. Only respond with 'NO INFO' if none of the information available "
+        system_gen_prompt += "is relevant. Use a single bullet-point if the question is not very specific."
+        system_gen_prompt += f"\n\nCONTENT: {resources.INFO}.\n\nQUESTION: {self.user_content}."
+
+        system_gen_messages = Messages.create('You are a helpful assistant.')
+        system_gen_messages.append(Message(role='user', content=system_gen_prompt))
+
+        system_message_str = await openai.async_get_completion(
+            messages=system_gen_messages.to_gpt(),
+            model="gpt-3.5-turbo",
+        )
+        _logger.debug(f'Generated system message: {system_message_str}')
+        return system_message_str
+

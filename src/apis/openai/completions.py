@@ -1,15 +1,14 @@
-from typing import *
-
 from apis.openai import client
+import asyncio
+from typing import List, Dict, Any, Generator, Union
 
 
-def get_completion(messages, model, stream=False, **kwargs):
+def get_completion(messages: List[Dict[str, Any]], model: str, stream: bool = False, **kwargs) -> Union[Generator[str, None, None], str]:
     """
-    Get a 'chat completion' response from openai. If `stream=True`, data
-    will be streamed back immediately, otherwise this method will wait
+    Get a 'chat completion' response from OpenAI. If `stream=True`, data
+    will be streamed back immediately; otherwise, this method will wait
     until all the response data has been generated before returning.
     """
-
     def streamed_response():
         for chunk in client.chat.completions.create(
             model=model,
@@ -23,6 +22,22 @@ def get_completion(messages, model, stream=False, **kwargs):
     if stream:
         return streamed_response()
     else:
-        # collect all data before returning
-        all_data = "".join(chunk for chunk in streamed_response())
-        return all_data
+        return ''.join(streamed_response())
+
+
+# Asynchronous method using asyncio and OpenAI API
+async def async_get_completion(messages: List[Dict[str, Any]], model: str, **kwargs) -> str:
+    """
+    Async function for getting a chat completion from OpenAI.
+    Returns the entire response as a string.
+    """
+    loop = asyncio.get_event_loop()
+    response = await loop.run_in_executor(
+        None,
+        get_completion,
+        messages,
+        model,
+        False,
+        **kwargs
+    )
+    return response

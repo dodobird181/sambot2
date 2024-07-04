@@ -6,6 +6,32 @@ import bleach
 import time
 from flask_wtf.csrf import CSRFProtect
 import asyncio
+import logger
+
+_logger = logger.get_logger(__name__)
+
+
+"""
+TODO: Remove me once it's confirmed that async shit works on the frontend...
+messages = [
+    {"role": "system", "content": "You are a helpful assistant."},
+    {"role": "user", "content": "Who won the world series in 2020?"}
+]
+
+print("sync stream = False...")
+res1 = ai.get_completion(messages, 'gpt-3.5-turbo', stream=False)
+print(res1)
+
+print("async call...")
+res_async = asyncio.run(ai.async_get_completion(messages, 'gpt-3.5-turbo'))
+print(res_async)
+
+print("sync stream = True...")
+for t in ai.get_completion(messages, 'gpt-3.5-turbo', stream=True):
+    print(f'sync token: {t}')
+
+exit()
+"""
 
 
 app = flask.Flask(__name__)
@@ -20,7 +46,9 @@ def messages_gen_to_event_stream(messages_gen):
 
     def html_gen():
         for messages in messages_gen:
-            yield flask.render_template("partial_messages.html", messages=messages.to_display())
+            yield flask.render_template(
+                "partial_messages.html", messages=messages.to_display()
+            )
 
     def sse_gen():
         for html_data in html_gen():
@@ -34,7 +62,7 @@ def messages_gen_to_event_stream(messages_gen):
     )
 
 
-def string_gen_to_messages_gen(string_gen, messages, user_content):
+def string_gen_to_messages_gen(string_gen, messages, user_content, system_message):
     """
     Convert a string generator into a `Messages` generator using the given `Messages` object.
     NOTE: side-effects include mutating the `Messages` object, saving the `Messages` object, and
@@ -49,7 +77,6 @@ def string_gen_to_messages_gen(string_gen, messages, user_content):
     messages.append(Message(role="assistant", content=""))
 
     # Generate system message and stream ellipsis
-    system_message = SystemMessage(messages, user_content)
     loop = asyncio.new_event_loop()
     asyncio.set_event_loop(loop)
     generate_system_message_task = loop.create_task(system_message.generate())
@@ -63,7 +90,14 @@ def string_gen_to_messages_gen(string_gen, messages, user_content):
         yield messages
         loop.run_until_complete(asyncio.sleep(0.5))
 
-    system_message = loop.run_until_complete(generate_system_message_task)
+    try:
+        system_message = loop.run_until_complete(generate_system_message_task)
+    except openai.APIConnectionError:
+        # set fake system message and notify the user
+        msg = 'Whoops! It looks like there\'s been an error connecting to the ChatGPT API. You can '
+        msg += 'check https://status.openai.com/, or test your internet connection and try again!'
+        string_gen = lambda _: (x for x in msg.split(' '))
+        system_message = SystemMessage(messages, user_content, dummy=True)
 
     # Clean assistant message of any leftover '.'s
     messages[len(messages) - 1] = Message(role="assistant", content="")
@@ -103,7 +137,7 @@ def home():
         id = flask.session.get(settings.SESSION_MESSAGES_KEY, None)
         messages = Messages.load_from_id(id)
     except BadId:
-        messages = Messages.create("TODO: DUMMY SYSTEM MESSAGE")
+        messages = Messages.create(system="")  #  System message gets populated by SystemMessage object later
     flask.session[settings.SESSION_MESSAGES_KEY] = str(messages.id)
 
     # Generate suggestion pills
@@ -135,12 +169,15 @@ def submit():
         flask.abort(404)
 
     # Stream back data to the client
+    _logger.error('RETURNING NORMAL MESSAGE')
+    system_message = SystemMessage(messages, user_content, dummy=False)
     string_gen = debug_string_gen if settings.DEBUG else openai_string_gen
     return messages_gen_to_event_stream(
         string_gen_to_messages_gen(
             string_gen=string_gen,
             messages=messages,
             user_content=user_content,
+            system_message=system_message,
         ),
     )
 
