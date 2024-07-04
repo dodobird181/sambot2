@@ -24,7 +24,7 @@ def messages_gen_to_event_stream(messages_gen):
     def html_gen():
         for messages in messages_gen:
             yield flask.render_template(
-                "partial_messages.html", messages=messages.to_display()
+                "messages.html", messages=messages.to_display()
             )
 
     def sse_gen():
