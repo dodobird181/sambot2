@@ -198,16 +198,20 @@ class SystemMessage:
             await asyncio.sleep(2)  # fake delay for testing
             return "DUMMY SYSTEM MESSAGE"
 
+        '''
+        TODO: Remove me, if not used in future!
         if len(self.messages) <= 3:
             # first set of messages, 1 system + 1 user + 1 assistant == 3
             _logger.debug(f'Returning default system message: {resources.DEFAULT_SYS_MSG[:50]}...')
             return resources.DEFAULT_SYS_MSG
+        '''
 
         # generate system message using gpt-3.5-turbo
         system_gen_prompt = "Summarize relevant information using bullet points from the following "
-        system_gen_prompt += "content to answer the given quesiton. Keep your summary as short as "
+        system_gen_prompt += "content to answer the given quesiton. Use the format 'You...', for example: "
+        system_gen_prompt += "'You grew up on Vancouver Island...'. Keep your summary as short as "
         system_gen_prompt += "possible. Only respond with 'NO INFO' if none of the information available "
-        system_gen_prompt += "is relevant. Use a single bullet-point if the question is not very specific."
+        system_gen_prompt += "is relevant."
         system_gen_prompt += f"\n\nCONTENT: {resources.INFO}.\n\nQUESTION: {self.user_content}."
 
         system_gen_messages = Messages.create('You are a helpful assistant.')
@@ -219,6 +223,13 @@ class SystemMessage:
         )
         system_gen_messages.delete()  # delete the temporary prompt message
 
-        _logger.debug(f'Generated system message "knowledge":\n{system_knowledge}')
+        # inject conversation topics from the knowledge base if no relevant information is detected
+        if 'NO INFO' in system_knowledge.upper():
+            system_knowledge = 'NO SPECIFIC INFO\n'
+            system_knowledge += '# Prime directive:\nDo not ask questions. Redirect the conversation to one of the topics below.\n'
+            system_knowledge += f'{resources.STARTERS}'
+
+        _logger.info(f'Generated system message "knowledge":\n{system_knowledge}')
+        # TODO: Change this to logger.DEBUG
         return f"{resources.STYLE}\n#Knowledge\n{system_knowledge}\n\nBegin now."
 

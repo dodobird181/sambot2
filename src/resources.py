@@ -16,4 +16,4 @@ def _read(path_inside_res) -> str:
 
 STYLE = _read("style.md")
 INFO = _read("info.md")
-DEFAULT_SYS_MSG = _read("default_sys_msg.md")
+STARTERS = _read("starters.md")
