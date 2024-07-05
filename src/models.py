@@ -101,6 +101,10 @@ class Messages(UserList):
             err_msg = f"Could not find messages with id {id}."
             _logger.warn(err_msg)
             raise NotFound(err_msg) from e
+        except json.decoder.JSONDecodeError as e:
+            err_msg = f"Error decoding messages with id: {id}. {e.args}"
+            _logger.warn(err_msg)
+            raise NotFound(err_msg) from e
 
     @classmethod
     def create(cls, system: str):

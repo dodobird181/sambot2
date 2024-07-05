@@ -15,7 +15,7 @@
         <h1>hi, i'm sam morris</h1>
         <ul id="messagesContainer">
             {% for message in messages %}
-                <li class="{{ message.role }}">{{ message.content }}</li>
+                <li class="{{ message.role }}">{{ message.content|safe }}</li>
             {% endfor %}
         </ul>
         <div class="pill-container">
