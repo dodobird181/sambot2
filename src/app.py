@@ -8,6 +8,14 @@ from flask_wtf.csrf import CSRFProtect
 import asyncio
 import logger
 
+"""
+TODO LIST:
+1. CSS styling of webpage.
+2. Maybe add gh, linkedin, and email address copying icons.
+3. Hand-write display pills and use them randomly!
+4. Turn temp up a little bit..
+"""
+
 _logger = logger.get_logger(__name__)
 
 
@@ -105,6 +113,7 @@ def openai_string_gen(messages):
         messages=messages.to_gpt(),
         model="gpt-4o",
         stream=True,
+        temperature=0.4,
     ):
         yield token
 

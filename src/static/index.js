@@ -39,6 +39,7 @@ document.addEventListener("DOMContentLoaded", () => {
         const source = new EventSource('/submit?user_content=' + userContent);
         source.onmessage = function(event) {
             if (event.data === 'STOP'){
+                location.reload(true);  // reload the page to generate pills... TODO: this is a hack
                 source.close();
             } else {
                 const parser = new DOMParser();

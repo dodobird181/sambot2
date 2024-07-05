@@ -8,6 +8,8 @@ import settings
 import logger
 import asyncio
 import resources
+import Levenshtein as lev
+import random
 
 _logger = logger.get_logger(__name__)
 
@@ -154,31 +156,59 @@ class Messages(UserList):
 class DisplayPills(UserList):
     """Wraps messages for generating suggestion pill text."""
 
-    def __init__(self, messages, dummy=settings.DEBUG):
+    PILLS = [
+        'What are your hobbies?',
+        'Where are you from?',
+        'Can I see your resume?',
+        'What is your work experience?',
+        "Where were you born?",
+        "What is your favourite video game?",
+        "Where did you go to school?",
+        "What do you like about living in Montreal?",
+        "Current role responsibilities?",
+        "Hobbies outside work?",
+        "Favorite childhood activity?",
+        "Do you have any siblings?",
+        "Most memorable travel experience?",
+        "What is your favourite movie?",
+        "What is your favourite music genre?",
+        "Do you have a favorite programming language?",
+        "Do you prefer coffee or tea?",
+        "Do you like to read?"
+    ]
+
+    def __init__(self, messages):
         super().__init__()
-        self.messages = messages.deep_copy()
-        self.dummy = dummy
+        self.messages = messages
+
+    @staticmethod
+    def get_str_similarity(str1, str2) -> float:
+        """Get the character distance between two strings as a percentage."""
+        distance = lev.distance(str1, str2)
+        distance = 0.0001 if distance == 0 else distance  # avoid divide by 0
+        return (1 / distance) * 100
 
     def generate(self):
-        """Generate suggestion pills for the current conversation using openai."""
-        if self.dummy:
-            self.data = [
-                "What are your hobbies?",
-                "Tell me about your work experience?",
-            ]
+        """Generate suggestion pills for the user to click on."""
+
+        if len(self.messages) <= 4:
+            # dont show pills at very start of a convo
+            self.data = []
             return
-        self.data = []
-        return  # TODO: This is for testing, remove me to actually generate pills!
-        system = (
-            "Generate 2-3 suggested questions for the user that are 3-10 words long to ask the assistant based "
-            + "on your content. Format your response using semicolons to separate "
-            + "each question like so: question;question;question\n\n Here is the content:"
-            + f"\n\n {resources.INFO}"
-        )
-        self.messages[0] = Message(role="system", content=system)
-        self.data = openai.get_completion(
-            self.messages.to_gpt(), "gpt-4o"
-        ).split(";")
+
+        pill_options = []  # populated below
+        user_message_contents = [message.content for message in self.messages if message.role == 'user']
+        for pill in self.PILLS:
+            should_add = True
+            for user_content in user_message_contents:
+                if self.get_str_similarity(user_content, pill) >= 6:
+                    # dont add if too similar to something already asked by the user
+                    should_add = False
+            if should_add:
+                pill_options.append(pill)
+
+        # sample random pill options
+        self.data = random.sample(pill_options, min(3, len(pill_options)))
 
 
 class SystemMessage:
@@ -207,11 +237,11 @@ class SystemMessage:
         '''
 
         # generate system message using gpt-3.5-turbo
-        system_gen_prompt = "Summarize relevant information using bullet points from the following "
+        system_gen_prompt = "Summarize only relevant information using bullet points from the following "
         system_gen_prompt += "content to answer the given quesiton. Use the format 'You...', for example: "
         system_gen_prompt += "'You grew up on Vancouver Island...'. Keep your summary as short as "
-        system_gen_prompt += "possible. Only respond with 'NO INFO' if none of the information available "
-        system_gen_prompt += "is relevant."
+        system_gen_prompt += "possible. Respond with 'NO INFO' if none of the information available "
+        system_gen_prompt += "is relevant. When in doubt, do not include the information."
         system_gen_prompt += f"\n\nCONTENT: {resources.INFO}.\n\nQUESTION: {self.user_content}."
 
         system_gen_messages = Messages.create('You are a helpful assistant.')
@@ -219,15 +249,9 @@ class SystemMessage:
 
         system_knowledge = await openai.async_get_completion(
             messages=system_gen_messages.to_gpt(),
-            model="gpt-3.5-turbo",
+            model="gpt-4o",
         )
         system_gen_messages.delete()  # delete the temporary prompt message
-
-        # inject conversation topics from the knowledge base if no relevant information is detected
-        if 'NO INFO' in system_knowledge.upper():
-            system_knowledge = 'NO SPECIFIC INFO\n'
-            system_knowledge += '# Prime directive:\nDo not ask questions. Redirect the conversation to one of the topics below.\n'
-            system_knowledge += f'{resources.STARTERS}'
 
         _logger.info(f'Generated system message "knowledge":\n{system_knowledge}')
         # TODO: Change this to logger.DEBUG
