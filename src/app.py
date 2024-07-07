@@ -7,23 +7,45 @@ import time
 from flask_wtf.csrf import CSRFProtect
 import asyncio
 import logger
+import flask_limiter as fl
 
 """
 TODO LIST:
 1. CSS styling of webpage.
-2. Maybe add gh, linkedin, and email address copying icons.
-3. Hand-write display pills and use them randomly!
-4. Turn temp up a little bit..
+3. ratelimit submit endpoint
+4. pip freeze requirements
+5. deploy!
+"""
+
+"""
+CSS changes:
+1. left align
+2. text size bigger
+3. make my name in h1 the blue color
+4. make input text box multiline wrap after text gets to a certain length
+5. add disclaimer in light grey under the submit box.
+6. change background color just like 1 value warmer (cream + yellowish tint)
+7. add copyright samuel morris 2024.
+8. add gh, linkedin, and email address copy to clipboard, and resume pdf opening icons
+   underneath the disclaimer (dark grey color but mouse over it's blue like the rest of the page).
 """
 
 _logger = logger.get_logger(__name__)
 
-
+# create app
 app = flask.Flask(__name__)
 app.secret_key = settings.FLASK_SECRET_KEY
 csrf = CSRFProtect(app)
 app.config["SESSION_COOKIE_SAMESITE"] = "Strict"
 app.config["SESSION_COOKIE_SECURE"] = True
+
+
+# create ratelimiter
+limiter = fl.Limiter(
+    fl.util.get_remote_address,
+    app=app,
+    default_limits=["360 per day"],
+)
 
 
 def messages_gen_to_event_stream(messages_gen):
@@ -113,7 +135,7 @@ def openai_string_gen(messages):
         messages=messages.to_gpt(),
         model="gpt-4o",
         stream=True,
-        temperature=0.4,
+        temperature=0.15,
     ):
         yield token
 
@@ -124,6 +146,14 @@ def connection_error_string_gen(message):
     connection_error_message += 'the ChatGPT API. You can check https://status.openai.com/, '
     connection_error_message += 'or test your internet connection and try again!'
     for token in connection_error_message.split(' '):
+        yield token + " "
+        time.sleep(0.1)
+
+
+def ratelimit_string_gen(message):
+    """Generate string tokens for when the client gets ratelimited on the submit endpoint."""
+    ratelimit_error_message = 'Woah there! You\'ve hit the limit for submissions. Please try again in a bit.'
+    for token in ratelimit_error_message.split(' '):
         yield token + " "
         time.sleep(0.1)
 
@@ -152,6 +182,7 @@ def home():
 
 # TODO: Ratelimit this silly willy
 @app.route("/submit")
+@limiter.limit("8 per minute")
 def submit():
 
     # Get user submission (or raise)
@@ -178,6 +209,39 @@ def submit():
             system_message_content=system_message,
         ),
     )
+
+
+@app.route('/resume')
+@limiter.limit("50 per hour")
+def resume():
+    return flask.send_from_directory('static', 'resume.pdf')
+
+
+@app.errorhandler(fl.RateLimitExceeded)
+def handle_rate_limit_exceeded(e):
+    if flask.request.endpoint == 'submit':
+        user_content = flask.request.args.get('user_content', None)
+
+        # Get messages from flask session (or raise)
+        try:
+            messages_id = flask.session.get(settings.SESSION_MESSAGES_KEY, None)
+            messages = Messages.load_from_id(messages_id)
+        except BadId:
+            flask.abort(404)
+
+        # stream back ratelimit message on submit
+        system_message = SystemMessage(messages, user_content, dummy=True)
+        return messages_gen_to_event_stream(
+            string_gen_to_messages_gen(
+                string_gen=ratelimit_string_gen,
+                messages=messages,
+                user_content=user_content,
+                system_message_content=system_message,
+            ),
+        )
+
+    # all other endpoints return 429 TOO_MANY_REQUESTS
+    flask.abort(429)
 
 
 if __name__ == "__main__":

@@ -236,12 +236,13 @@ class SystemMessage:
             return resources.DEFAULT_SYS_MSG
         '''
 
+
         # generate system message using gpt-3.5-turbo
-        system_gen_prompt = "Summarize only relevant information using bullet points from the following "
+        system_gen_prompt = "Summarize relevant information using bullet points from the following "
         system_gen_prompt += "content to answer the given quesiton. Use the format 'You...', for example: "
         system_gen_prompt += "'You grew up on Vancouver Island...'. Keep your summary as short as "
-        system_gen_prompt += "possible. Respond with 'NO INFO' if none of the information available "
-        system_gen_prompt += "is relevant. When in doubt, do not include the information."
+        system_gen_prompt += "possible. Respond with 'NO INFO' if none of the content available "
+        system_gen_prompt += "is relevant to the given question."
         system_gen_prompt += f"\n\nCONTENT: {resources.INFO}.\n\nQUESTION: {self.user_content}."
 
         system_gen_messages = Messages.create('You are a helpful assistant.')
@@ -255,5 +256,5 @@ class SystemMessage:
 
         _logger.info(f'Generated system message "knowledge":\n{system_knowledge}')
         # TODO: Change this to logger.DEBUG
-        return f"{resources.STYLE}\n#Knowledge\n{system_knowledge}\n\nBegin now."
 
+        return f"{resources.STYLE}\n\n#Knowledge Base\n{system_knowledge}\n\nBegin now."
