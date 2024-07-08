@@ -13,7 +13,7 @@ import flask_limiter as fl
 TODO LIST:
 1. CSS styling of webpage .. SEE BELOW
 3. ratelimit submit endpoint .. DONE
-4. pip freeze requirements [ ]
+4. pip freeze requirements .. DONE
 5. deploy! [ ]
 6. pass entire messages content into gpt4 system prompt creator brooo
 """
@@ -24,13 +24,13 @@ CSS changes:
 2. text size bigger .. DONE
 2.5. messages box hides too much text .. DONE
 3. make my name in h1 the blue color .. DONE
-3.5. make submitting dots light grey
+3.5. make submitting dots light grey .. DO LATER
 4. make input text box multiline wrap after text gets to a certain length .. WONT DO
-5. add disclaimer in light grey under the submit box.
+5. add disclaimer in light grey under the submit box .. DONE
 6. change background color just like 1 value warmer (cream + yellowish tint)
-7. add copyright samuel morris 2024.
+7. add copyright samuel morris 2024 .. DONE
 8. add gh, linkedin, and email address copy to clipboard, and resume pdf opening icons
-   underneath the disclaimer (dark grey color but mouse over it's blue like the rest of the page).
+   underneath the disclaimer (dark grey color but mouse over it's blue like the rest of the page)
 """
 
 _logger = logger.get_logger(__name__)
