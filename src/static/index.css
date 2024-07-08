@@ -51,6 +51,34 @@ h1 {
     left: 0;
     margin-bottom: 10px;
 }
+@media screen and (max-height: 690px) {
+    .disclaimer {
+        position: relative;
+        margin: 0;
+        padding: 0;
+    }
+}
+@media screen and (max-width: 712px) {
+    .disclaimer {
+      position: relative;
+      margin: 0;
+      padding: 0;
+    }
+    body {
+        text-align: center;
+        margin: 0;
+    }
+    .icons-container {
+        display: block;
+        margin-top: 10px;
+    }
+    li {
+        text-align: left;
+    }
+    .inline {
+        text-align: left;
+    }
+  }
 
 /*Add cool font*/
 body, input {
@@ -64,18 +92,33 @@ body, input {
     width: 95%;
     max-height: 400px; /* Adjust as needed */
     overflow-y: auto;
-    margin-top: 0px;
-    margin-bottom: 0px;
-}
-
-ul li:first-child {
     margin-top: 20px;
-}
-ul li:last-child {
-    margin-bottom: 20px;
+    margin-bottom: 0px;
 }
 ul li::marker {
     color: grey;
+}
+
+/* WebKit-based browsers (Chrome, Safari) */
+.messages-container::-webkit-scrollbar {
+  width: 12px; /* Width of the scrollbar */
+}
+.messages-container::-webkit-scrollbar-track {
+  background: #f1f1f1; /* Background color of the track */
+  border-radius: 10px; /* Roundness of the track */
+}
+.messages-container::-webkit-scrollbar-thumb {
+  background: #888; /* Color of the scrollbar handle */
+  border-radius: 10px; /* Roundness of the scrollbar handle */
+  border: 2px solid #f1f1f1; /* Space around the scrollbar handle */
+}
+.messages-container::-webkit-scrollbar-thumb:hover {
+  background: #555; /* Color of the scrollbar handle on hover */
+}
+/* Firefox */
+.messages-container {
+  scrollbar-width: thin; /* "auto" or "thin" */
+  scrollbar-color: #888 #f1f1f1; /* Scroll thumb and track */
 }
 
 .input-container {
@@ -143,4 +186,8 @@ ul li::marker {
 .submit-button:hover {
     background-color: blue; /* Change the background color on hover */
     color: white; /* Optional: Change the text color on hover for better contrast */
+}
+
+.inline {
+    display: inline;
 }
