@@ -65,11 +65,13 @@ def messages_gen_to_event_stream(messages_gen):
             yield f"data: {formatted_html}\n\n"
         yield "data: STOP\n\n"  # Signal end of stream
 
-    return flask.Response(
+    response = flask.Response(
         flask.stream_with_context(sse_gen()),
         mimetype="text/event-stream",
         content_type="text/event-stream",
     )
+    response.headers['X-Accel-Buffering'] = 'no'  # Disable buffering in some servers
+    return response
 
 
 def string_gen_to_messages_gen(
