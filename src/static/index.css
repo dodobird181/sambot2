@@ -38,7 +38,7 @@ h1 {
     color: blue;
 }
 .icons-container {
-    margin-left: 10px;
+    margin-left: 20px;
     display: inline;
 }
 
@@ -140,6 +140,7 @@ ul li::marker {
 
 .pill-container {
     display: flex;
+    margin-top: 10px;
 }
 
 .pill {
