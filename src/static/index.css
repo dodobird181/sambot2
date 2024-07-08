@@ -1,25 +1,98 @@
 
+h1 {
+    margin-left: 20px;
+    margin-bottom: 0px;
+    font-size: 48px;
+    display: inline;
+}
+
+.title-spacer {
+    padding: 10px;
+}
+
+.nameblue {
+    color: blue;
+    display: inline;
+}
+
+.attribution-link {
+    text-decoration: none;
+    color: #ccc;
+    padding-right: 5px;
+}
+.attribution-link:hover .attribution-link:focus {
+    color: grey;
+}
+
+.icon {
+    width: 24px;
+    height: 24px;
+    vertical-align: middle;
+    margin-bottom: 15px;
+    margin-right: 2px;
+    color: #ccc;
+    transition: fill 0.3s ease;
+    text-decoration: none;
+}
+.icon:hover {
+    color: blue;
+}
+.icons-container {
+    margin-left: 10px;
+    display: inline;
+}
+
+.disclaimer {
+    margin: 0 0 0 20px;
+    font-size: 12px;
+    color: #ccc;
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    margin-bottom: 10px;
+}
+
 /*Add cool font*/
 body, input {
     font-family: "Tiny5", sans-serif;
     font-weight: 400;
     font-style: normal;
+    font-size: 20px;
+}
+
+.messages-container {
+    width: 95%;
+    max-height: 400px; /* Adjust as needed */
+    overflow-y: auto;
+    margin-top: 0px;
+    margin-bottom: 0px;
+}
+
+ul li:first-child {
+    margin-top: 20px;
+}
+ul li:last-child {
+    margin-bottom: 20px;
+}
+ul li::marker {
+    color: grey;
 }
 
 .input-container {
     display: inline-block;
+    margin-left: -2px;
 }
 
 .growing-input {
     width: 2ch; /* Initial width to fit at least one character */
-    min-width: 120px; /* Minimum width of the input */
+    min-width: 170px; /* Minimum width of the input */
     padding: 8px;
-    font-size: 16px;
     box-sizing: border-box;
     transition: width 0.2s ease-out; /* Smooth transition for width change */
     border: 1px solid #ccc;
     border-radius: 4px;
     margin: 20px 20px;
+    margin-right: 2px;
 }
 
 .pill-container {
@@ -48,4 +121,26 @@ body, input {
     position: absolute;
     top: 0;
     left: 0;
+}
+
+.submit-button {
+    background-color: white;
+    color: grey;
+    border: 1px solid #ccc;
+    border-radius: 4px;
+    font-family: "Tiny5", sans-serif;
+    font-weight: 400;
+    font-style: normal;
+    font-size: 20px;
+    padding: 8px;
+    padding-left: 10px;
+    padding-right: 10px;
+    width: auto;
+    margin: 0;
+    cursor: pointer;
+}
+
+.submit-button:hover {
+    background-color: blue; /* Change the background color on hover */
+    color: white; /* Optional: Change the text color on hover for better contrast */
 }

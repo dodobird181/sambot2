@@ -12,20 +12,64 @@
         <link rel="icon" href="{{ url_for('static', filename='favicon.png') }}">
     </head>
     <body>
-        <h1>hi, i'm sam morris</h1>
-        <ul id="messagesContainer">
-            {% for message in messages %}
-                <li class="{{ message.role }}">{{ message.content|safe }}</li>
-            {% endfor %}
-        </ul>
-        <div class="pill-container">
-            {% for pill in pills %}
-                <p class="pill">{{ pill }}</p>
-            {% endfor %}
+        <div class="title-spacer"></div>
+        <h1>hi, i'm <p class="nameblue">sam morris</p></h1>
+        <div class="icons-container">
+            <a href="https://github.com/dodobird181" target="_blank" class="icon">
+                <svg class="icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24">
+                    <path d="M12 .297c-6.63 0-12 5.373-12 12 0 5.303 3.438 9.8 8.205 11.387.6.11.82-.258.82-.577 0-.285-.01-1.04-.015-2.04-3.338.724-4.042-1.612-4.042-1.612-.546-1.387-1.333-1.756-1.333-1.756-1.09-.744.084-.729.084-.729 1.205.084 1.84 1.236 1.84 1.236 1.07 1.835 2.807 1.305 3.492.998.108-.775.42-1.305.763-1.605-2.665-.305-5.466-1.334-5.466-5.933 0-1.312.47-2.382 1.236-3.22-.124-.303-.536-1.523.117-3.176 0 0 1.01-.323 3.3 1.23.96-.267 1.98-.4 3-.404 1.02.004 2.04.137 3 .404 2.28-1.553 3.29-1.23 3.29-1.23.655 1.653.243 2.873.12 3.176.77.838 1.23 1.908 1.23 3.22 0 4.61-2.805 5.625-5.475 5.922.43.37.81 1.096.81 2.21 0 1.595-.015 2.878-.015 3.27 0 .322.218.694.825.576 4.765-1.59 8.2-6.086 8.2-11.387 0-6.627-5.373-12-12-12z" fill="currentColor"/>
+                </svg>
+            </a>
+            <a href="mailto:dodobird181@gmail.com" class="icon">
+                <svg class="icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24">
+                    <path d="M12 12.713l11.985-7.713-23.97 0z" fill="currentColor"/>
+                    <path d="M12 13.287l-12-7.8v15.65h24v-15.65z" fill="currentColor"/>
+                </svg>
+            </a>
+            <a href="https://www.linkedin.com/in/smorris-profile" target="_blank" class="icon">
+                <svg class="icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24">
+                    <path d="M22.23 0H1.77C.79 0 0 .774 0 1.73v20.54C0 23.226.79 24 1.77 24h20.46c.98 0 1.77-.774 1.77-1.73V1.73C24 .774 23.21 0 22.23 0zM7.09 20.452H3.56V9h3.53v11.452zm-1.76-13.1c-1.1 0-1.99-.885-1.99-1.977 0-1.092.89-1.977 1.99-1.977 1.1 0 1.99.885 1.99 1.977 0 1.092-.89 1.977-1.99 1.977zM20.45 20.45h-3.53V14.8c0-1.346-.03-3.07-1.87-3.07-1.87 0-2.16 1.46-2.16 2.968v5.755h-3.53V9h3.39v1.56h.05c.47-.885 1.62-1.815 3.33-1.815 3.57 0 4.22 2.35 4.22 5.402v6.304z" fill="currentColor"/>
+                </svg>
+            </a>
+            <a href="https://www.sammorris.ca/resume" target="_blank" class="icon hidden">
+                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="100" height="100">
+                    <!-- Document outline -->
+                    <path d="M19.41 6.39l-5.82-5.82C13.17.21 12.6 0 12 0H6C4.89 0 4 .89 4 2v20c0 1.1.89 2 2 2h12c1.1 0 2-.9 2-2V8c0-.6-.21-1.17-.59-1.61zM14 2.5l5.5 5.5H15c-.55 0-1-.45-1-1V2.5zM12 19c0 .55-.45 1-1 1H8v-4h3c.55 0 1 .45 1 1v2zm0-6c0 .55-.45 1-1 1H8v-4h3c.55 0 1 .45 1 1v2z" fill="black"/>
+                    <!-- Text lines -->
+                    <path d="M8 14h8v2H8zm0-6h8v2H8z" fill="black"/>
+                </svg>
+            </a>
         </div>
+        {% if messages.length != 0 %}
+            <ul id="messagesContainer" class="messages-container">
+                {% for message in messages %}
+                    <li class="{{ message.role }}">{{ message.content|safe }}</li>
+                {% endfor %}
+            </ul>
+        {% endif %}
+        {% if pills.length != 0 %}
+            <div class="pill-container">
+                {% for pill in pills %}
+                    <p class="pill">{{ pill }}</p>
+                {% endfor %}
+            </div>
+        {% endif %}
         <div class="input-container">
-            <input id="inputBox" class="growing-input" type="text" placeholder="ask me anything">
+            <input id="inputBox" class="growing-input" type="text" placeholder="ask me anything..">
             <span id="textWidthCalculator" class="hidden"></span>
         </div>
+        <button id="submitButton" class="submit-button">></button>
+
     </body>
+    <footer class="disclaimer">
+        <p>
+            Disclaimer: This conversation is between you and an online chatbot created by Samuel
+            Morris, and powered behind the scenes by OpenAI. While this chatbot is designed to be as truthful as
+            possible using clever prompt-engineering, I provide no guarantee that all information will be 100%
+            accurate. Please verify any important details independently and use this information at your own
+            discretion.
+        </p>
+        <a target="_blank" class="attribution-link" href="https://averysuzuki.com/" title="linkedin icons">CV icon created by Avery Suzuki</a>
+        <p id="copyright"></p>
+    </footer>
 </html>

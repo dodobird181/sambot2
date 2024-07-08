@@ -6,6 +6,16 @@ document.addEventListener("DOMContentLoaded", () => {
     const textWidthCalculator = document.getElementById('textWidthCalculator');
     const pills = document.querySelectorAll('.pill');
     const messagesContainer = document.getElementById('messagesContainer');
+    const submitButton = document.getElementById("submitButton");
+    const copyright = document.getElementById("copyright");
+
+    const year = new Date().getFullYear();
+    copyright.innerHTML = "Copyright " + year + " Samuel Morris";
+
+    // make submit button work
+    submitButton.addEventListener('click', function() {
+        submitUserInput();
+    });
 
     // grow input box when text added
     inputBox.addEventListener('input', function() {
@@ -20,6 +30,7 @@ document.addEventListener("DOMContentLoaded", () => {
             inputBox.value = pill.textContent;
             inputBox.dispatchEvent(new Event('input'));
             submitUserInput();
+            inputBox.dispatchEvent(new Event('input'));
         });
     });
 
@@ -40,12 +51,14 @@ document.addEventListener("DOMContentLoaded", () => {
         source.onmessage = function(event) {
             if (event.data === 'STOP'){
                 location.reload(true);  // reload the page to generate pills... TODO: this is a hack
+                scrollToBottom();
                 source.close();
             } else {
                 const parser = new DOMParser();
                 const doc = parser.parseFromString(event.data, 'text/html');
                 const newContent = doc.body.innerHTML;  // assumes stream data wrapped in body
                 messagesContainer.innerHTML = newContent;
+                scrollToBottom();
             }
         };
         source.onerror = function(event) {
@@ -53,5 +66,12 @@ document.addEventListener("DOMContentLoaded", () => {
             source.close();
         };
     }
+
+    function scrollToBottom() {
+        const messagesContainerEl = document.getElementById('messagesContainer');
+        messagesContainerEl.scrollTop = messagesContainerEl.scrollHeight;
+    }
+
+    scrollToBottom();
 
 });
