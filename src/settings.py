@@ -1,7 +1,7 @@
 import os
 
 # This is the flag that determines whether we are in production
-DEBUG = os.getenv('DEBUG', True)
+DEBUG = False if os.getenv('DEBUG') == 'FALSE' else True
 
 if DEBUG:
     # use local secrets for development
