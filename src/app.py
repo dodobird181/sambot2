@@ -14,7 +14,7 @@ TODO LIST:
 1. CSS styling of webpage .. SEE BELOW
 3. ratelimit submit endpoint .. DONE
 4. pip freeze requirements .. DONE
-5. deploy! [ ]
+5. deploy! .. DONE
 6. pass entire messages content into gpt4 system prompt creator brooo
 """
 
@@ -56,9 +56,7 @@ def messages_gen_to_event_stream(messages_gen):
 
     def html_gen():
         for messages in messages_gen:
-            yield flask.render_template(
-                "messages.html", messages=messages.to_display()
-            )
+            yield flask.render_template("messages.html", messages=messages.to_display())
 
     def sse_gen():
         for html_data in html_gen():
@@ -68,11 +66,15 @@ def messages_gen_to_event_stream(messages_gen):
         yield "data: STOP\n\n"  # Signal end of stream
 
     return flask.Response(
-        flask.stream_with_context(sse_gen()), mimetype="text/event-stream"
+        flask.stream_with_context(sse_gen()),
+        mimetype="text/event-stream",
+        content_type="text/event-stream",
     )
 
 
-def string_gen_to_messages_gen(string_gen, messages, user_content, system_message_content):
+def string_gen_to_messages_gen(
+    string_gen, messages, user_content, system_message_content
+):
     """
     Convert a string generator into a `Messages` generator using the given `Messages` object.
     NOTE: side-effects include mutating the `Messages` object, saving the `Messages` object, and
@@ -110,7 +112,7 @@ def string_gen_to_messages_gen(string_gen, messages, user_content, system_messag
         system_message_content = SystemMessage(messages, user_content, dummy=True)
 
     # set system message
-    messages[0] = Message(role='system', content=system_message_content)
+    messages[0] = Message(role="system", content=system_message_content)
 
     # Clean assistant message of any leftover '.'s
     messages[len(messages) - 1] = Message(role="assistant", content="")
@@ -145,18 +147,24 @@ def openai_string_gen(messages):
 
 def connection_error_string_gen(message):
     """Generate string tokens for when a connection error occurrs."""
-    connection_error_message = 'Whoops! It looks like there\'s been an error connecting to '
-    connection_error_message += 'the ChatGPT API. You can check https://status.openai.com/, '
-    connection_error_message += 'or test your internet connection and try again!'
-    for token in connection_error_message.split(' '):
+    connection_error_message = (
+        "Whoops! It looks like there's been an error connecting to "
+    )
+    connection_error_message += (
+        "the ChatGPT API. You can check https://status.openai.com/, "
+    )
+    connection_error_message += "or test your internet connection and try again!"
+    for token in connection_error_message.split(" "):
         yield token + " "
         time.sleep(0.1)
 
 
 def ratelimit_string_gen(message):
     """Generate string tokens for when the client gets ratelimited on the submit endpoint."""
-    ratelimit_error_message = 'Woah there! You\'ve hit the limit for submissions. Please try again in a bit.'
-    for token in ratelimit_error_message.split(' '):
+    ratelimit_error_message = (
+        "Woah there! You've hit the limit for submissions. Please try again in a bit."
+    )
+    for token in ratelimit_error_message.split(" "):
         yield token + " "
         time.sleep(0.1)
 
@@ -169,7 +177,9 @@ def home():
         id = flask.session.get(settings.SESSION_MESSAGES_KEY, None)
         messages = Messages.load_from_id(id)
     except BadId:
-        messages = Messages.create(system="")  #  System message gets populated by SystemMessage object later
+        messages = Messages.create(
+            system=""
+        )  #  System message gets populated by SystemMessage object later
     flask.session[settings.SESSION_MESSAGES_KEY] = str(messages.id)
 
     # Generate suggestion pills
@@ -182,6 +192,7 @@ def home():
         messages=messages.to_display(),
         pills=pills,
     )
+
 
 # TODO: Ratelimit this silly willy
 @app.route("/submit")
@@ -214,16 +225,16 @@ def submit():
     )
 
 
-@app.route('/resume')
+@app.route("/resume")
 @limiter.limit("50 per hour")
 def resume():
-    return flask.send_from_directory('static', 'resume.pdf')
+    return flask.send_from_directory("static", "resume.pdf")
 
 
 @app.errorhandler(fl.RateLimitExceeded)
 def handle_rate_limit_exceeded(e):
-    if flask.request.endpoint == 'submit':
-        user_content = flask.request.args.get('user_content', None)
+    if flask.request.endpoint == "submit":
+        user_content = flask.request.args.get("user_content", None)
 
         # Get messages from flask session (or raise)
         try:

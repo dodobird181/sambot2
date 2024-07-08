@@ -7,7 +7,7 @@ _logger = logger.get_logger(__name__)
 
 
 def _read(path_inside_res) -> str:
-    path = f'{settings.LOCAL_RESOURCE_DIR}/{path_inside_res}'
+    path = f"{settings.LOCAL_RESOURCE_DIR}/{path_inside_res}"
     try:
         with open(path, "r") as file:
             return file.read()

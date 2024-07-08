@@ -137,7 +137,7 @@ class Messages(UserList):
         try:
             os.remove(self._filename(self.id))
         except Exception as e:
-            raise WriteError(f'Failed to delete messages: {e}.') from e
+            raise WriteError(f"Failed to delete messages: {e}.") from e
 
     def deep_copy(self):
         """Return a deep-copy of this Messages object."""
@@ -157,10 +157,10 @@ class DisplayPills(UserList):
     """Wraps messages for generating suggestion pill text."""
 
     PILLS = [
-        'What are your hobbies?',
-        'Where are you from?',
-        'Can I see your resume?',
-        'What is your work experience?',
+        "What are your hobbies?",
+        "Where are you from?",
+        "Can I see your resume?",
+        "What is your work experience?",
         "Where were you born?",
         "What is your favourite video game?",
         "Where did you go to school?",
@@ -174,7 +174,7 @@ class DisplayPills(UserList):
         "What is your favourite music genre?",
         "Do you have a favorite programming language?",
         "Do you prefer coffee or tea?",
-        "Do you like to read?"
+        "Do you like to read?",
     ]
 
     def __init__(self, messages):
@@ -197,7 +197,9 @@ class DisplayPills(UserList):
             return
 
         pill_options = []  # populated below
-        user_message_contents = [message.content for message in self.messages if message.role == 'user']
+        user_message_contents = [
+            message.content for message in self.messages if message.role == "user"
+        ]
         for pill in self.PILLS:
             should_add = True
             for user_content in user_message_contents:
@@ -228,25 +230,32 @@ class SystemMessage:
             await asyncio.sleep(2)  # fake delay for testing
             return "DUMMY SYSTEM MESSAGE"
 
-        '''
+        """
         TODO: Remove me, if not used in future!
         if len(self.messages) <= 3:
             # first set of messages, 1 system + 1 user + 1 assistant == 3
             _logger.debug(f'Returning default system message: {resources.DEFAULT_SYS_MSG[:50]}...')
             return resources.DEFAULT_SYS_MSG
-        '''
-
+        """
 
         # generate system message using gpt-3.5-turbo
-        system_gen_prompt = "Summarize relevant information using bullet points from the following "
+        system_gen_prompt = (
+            "Summarize relevant information using bullet points from the following "
+        )
         system_gen_prompt += "content to answer the given quesiton. Use the format 'You...', for example: "
-        system_gen_prompt += "'You grew up on Vancouver Island...'. Keep your summary as short as "
-        system_gen_prompt += "possible. Respond with 'NO INFO' if none of the content available "
+        system_gen_prompt += (
+            "'You grew up on Vancouver Island...'. Keep your summary as short as "
+        )
+        system_gen_prompt += (
+            "possible. Respond with 'NO INFO' if none of the content available "
+        )
         system_gen_prompt += "is relevant to the given question."
-        system_gen_prompt += f"\n\nCONTENT: {resources.INFO}.\n\nQUESTION: {self.user_content}."
+        system_gen_prompt += (
+            f"\n\nCONTENT: {resources.INFO}.\n\nQUESTION: {self.user_content}."
+        )
 
-        system_gen_messages = Messages.create('You are a helpful assistant.')
-        system_gen_messages.append(Message(role='user', content=system_gen_prompt))
+        system_gen_messages = Messages.create("You are a helpful assistant.")
+        system_gen_messages.append(Message(role="user", content=system_gen_prompt))
 
         system_knowledge = await openai.async_get_completion(
             messages=system_gen_messages.to_gpt(),
