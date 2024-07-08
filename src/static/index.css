@@ -158,6 +158,11 @@ ul li::marker {
     background-color: blue; /* Change the background color on hover */
     color: white; /* Optional: Change the text color on hover for better contrast */
 }
+.pill-disabled:hover, .pill-disabled {
+    background-color: lightgrey;
+    color: grey;
+    cursor: auto;
+}
 
 .hidden {
     visibility: hidden;
@@ -187,6 +192,12 @@ ul li::marker {
 .submit-button:hover {
     background-color: blue; /* Change the background color on hover */
     color: white; /* Optional: Change the text color on hover for better contrast */
+}
+
+.submit-button-disabled:hover, .submit-button-disabled {
+    background-color: lightgrey;
+    color: grey;
+    cursor: auto;
 }
 
 .inline {
