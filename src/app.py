@@ -15,7 +15,8 @@ TODO LIST:
 3. ratelimit submit endpoint .. DONE
 4. pip freeze requirements .. DONE
 5. deploy! .. DONE
-6. pass entire messages content into gpt4 system prompt creator brooo
+5.5. buffering responses in production .. DONE!!!!!
+6. pass entire messages content into gpt4 system prompt creator brooo .. DONE
 """
 
 """

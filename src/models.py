@@ -152,6 +152,10 @@ class Messages(UserList):
         """Format messages for calls to chat gpt's api."""
         return [dataclasses.asdict(m) for m in self.data]
 
+    def to_system_gen(self):
+        """Format messages as string for injection into system prompt generator."""
+        return '\n'.join([f"{m.role} :: {m.content}" for m in self.data if m.role != "system"])
+
 
 class DisplayPills(UserList):
     """Wraps messages for generating suggestion pill text."""
@@ -165,11 +169,7 @@ class DisplayPills(UserList):
         "What is your favourite video game?",
         "Where did you go to school?",
         "What do you like about living in Montreal?",
-        "Current role responsibilities?",
-        "Hobbies outside work?",
-        "Favorite childhood activity?",
-        "Do you have any siblings?",
-        "Most memorable travel experience?",
+        "What are your hobbies outside work?",
         "What is your favourite movie?",
         "What is your favourite music genre?",
         "Do you have a favorite programming language?",
@@ -230,28 +230,16 @@ class SystemMessage:
             await asyncio.sleep(2)  # fake delay for testing
             return "DUMMY SYSTEM MESSAGE"
 
-        """
-        TODO: Remove me, if not used in future!
-        if len(self.messages) <= 3:
-            # first set of messages, 1 system + 1 user + 1 assistant == 3
-            _logger.debug(f'Returning default system message: {resources.DEFAULT_SYS_MSG[:50]}...')
-            return resources.DEFAULT_SYS_MSG
-        """
-
-        # generate system message using gpt-3.5-turbo
+        # generate system message
         system_gen_prompt = (
-            "Summarize relevant information using bullet points from the following "
-        )
-        system_gen_prompt += "content to answer the given quesiton. Use the format 'You...', for example: "
-        system_gen_prompt += (
-            "'You grew up on Vancouver Island...'. Keep your summary as short as "
-        )
-        system_gen_prompt += (
-            "possible. Respond with 'NO INFO' if none of the content available "
-        )
-        system_gen_prompt += "is relevant to the given question."
-        system_gen_prompt += (
-            f"\n\nCONTENT: {resources.INFO}.\n\nQUESTION: {self.user_content}."
+            "Summarize relevant information using bullet points from the following " +
+            "content to answer the given quesiton. Use the format 'You...', for example: " +
+            "'You grew up on Vancouver Island...'. Keep your summary as short as " +
+            "possible. Respond with 'NO INFO' if none of the content available " +
+            f"is relevant to the given question. To help you decide what information is" +
+            "relevant, you also have access to the history of messages between you and the user." +
+            f"Begin Now... \n\nCONTENT: {resources.INFO}\n\nQUESTION: {self.user_content}.\n\n" +
+            f"MESSAGE HISTORY: {self.messages.to_system_gen()}"
         )
 
         system_gen_messages = Messages.create("You are a helpful assistant.")
@@ -263,7 +251,6 @@ class SystemMessage:
         )
         system_gen_messages.delete()  # delete the temporary prompt message
 
-        _logger.info(f'Generated system message "knowledge":\n{system_knowledge}')
-        # TODO: Change this to logger.DEBUG
+        _logger.debug(f'Generated system message "knowledge":\n{system_knowledge}')
 
         return f"{resources.STYLE}\n\n#Knowledge Base\n{system_knowledge}\n\nBegin now."
