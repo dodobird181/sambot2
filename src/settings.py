@@ -12,5 +12,6 @@ else:
     OPENAI_API_KEY = os.getenv('OPENAI_API_KEY')
 
 SESSION_MESSAGES_KEY = "sambot-messages"
-LOCAL_MESSAGES_DIR = "../data/messages"
+LOCAL_MESSAGES_DIR = "../data/messages" if DEBUG else "data/messages"
+LOCAL_RESOURCE_DIR = "../res" if DEBUG else "res"
 LOG_LEVEL = "INFO" if not DEBUG else "DEBUG"
