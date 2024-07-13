@@ -1,7 +1,7 @@
 # Added by sam
 .database.db
 .vscode
-_env_secrets.py
+src/_dev_secrets.py
 data/
 test_data/
 _start_dev.py

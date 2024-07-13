@@ -36,6 +36,11 @@ CSS changes:
 
 _logger = logger.get_logger(__name__)
 
+
+if settings.IS_PROD:
+    _logger.info('Starting production server..')
+
+
 # create app
 app = flask.Flask(__name__)
 app.secret_key = settings.FLASK_SECRET_KEY
@@ -129,8 +134,8 @@ def string_gen_to_messages_gen(
     messages.save()
 
 
-def debug_string_gen(messages):
-    """Generate string tokens for debugging purposes."""
+def dummy_string_gen(messages):
+    """Generate dummy string tokens for debugging purposes."""
     debug_message = "Hello world! This is a dummy chat gpt response for sambot :)"
     for token in debug_message.split(" "):
         yield token + " "
@@ -197,7 +202,6 @@ def home():
     )
 
 
-# TODO: Ratelimit this silly willy
 @app.route("/submit")
 @limiter.limit("15 per minute")
 def submit():
@@ -217,7 +221,7 @@ def submit():
 
     # Stream back data to the client
     system_message = SystemMessage(messages, user_content)
-    string_gen = debug_string_gen if settings.DEBUG else openai_string_gen
+    string_gen = dummy_string_gen if settings.USE_DUMMY_OPENAI_RESPONSE else openai_string_gen
     return messages_gen_to_event_stream(
         string_gen_to_messages_gen(
             string_gen=string_gen,

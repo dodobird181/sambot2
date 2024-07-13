@@ -216,7 +216,7 @@ class DisplayPills(UserList):
 class SystemMessage:
     """Wraps messages to generate a system message."""
 
-    def __init__(self, messages, user_content, dummy=settings.DEBUG):
+    def __init__(self, messages, user_content, dummy=settings.USE_DUMMY_SYSTEM_MESSAGE):
         self.messages = messages
         self.user_content = user_content
         self.dummy = dummy
