@@ -7,5 +7,4 @@ APIConnectionError = openai.APIConnectionError
 
 # expose module endpoints
 from apis.openai.completions import get_completion, async_get_completion
-from apis.openai.embeddings import get_embedding
-from apis.openai.utils import *
+from apis.openai.embeddings import Embedding, k_nearest
