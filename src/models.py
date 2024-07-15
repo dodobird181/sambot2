@@ -216,6 +216,8 @@ class DisplayPills(UserList):
 class SystemMessage:
     """Wraps messages to generate a system message."""
 
+    embeddings = openai.Embedding.load_list('embeddings.json')
+
     def __init__(self, messages, user_content, dummy=settings.USE_DUMMY_SYSTEM_MESSAGE):
         self.messages = messages
         self.user_content = user_content
@@ -230,17 +232,66 @@ class SystemMessage:
             await asyncio.sleep(2)  # fake delay for testing
             return "DUMMY SYSTEM MESSAGE"
 
-        # generate system message
         system_gen_prompt = (
-            "Summarize relevant information using bullet points from the following " +
-            "content to answer the given quesiton. Use the format 'You...', for example: " +
-            "'You grew up on Vancouver Island...'. Keep your summary as short as " +
-            "possible. Respond with 'NO INFO' if none of the content available " +
-            f"is relevant to the given question. To help you decide what information is" +
-            "relevant, you also have access to the history of messages between you and the user." +
-            f"Begin Now... \n\nCONTENT: {resources.INFO}\n\nQUESTION: {self.user_content}.\n\n" +
-            f"MESSAGE HISTORY: {self.messages.to_system_gen()}"
+            "Restate the user's question to include the context of the conversation:\n" +
+            f"{self.messages.to_system_gen()}"
         )
+
+        contextualized_user_question = await openai.async_get_completion(
+            messages=[
+                {
+                    'role': 'system',
+                    'content': 'You are a helpful assistant.',
+                },
+                {
+                    'role': 'user',
+                    'content': (
+                        "Rephrase the user's question to make sense in the conversation context. Only " +
+                        "respond with the new question." +
+                        f"\n\nCONVERSATION:\n\n{self.messages.to_system_gen()}\nuser :: {self.user_content}"
+                    )
+                }
+            ],
+            model='gpt-4o',
+        )
+        _logger.debug(f'Original user question: {self.user_content}.')
+        _logger.debug(f'Contextualized user quesiton: {contextualized_user_question}.')
+
+        """
+        hallucination_stopper = await openai.async_get_completion(
+            messages=[
+                {
+                    'role': 'system',
+                    'content': 'You are a helpful assistant.',
+                },
+                {
+                    'role': 'user',
+                    'content': (
+                        "Rephrase this question by asserting that if the person reading the question" +
+                        "doesn't know the answer because it's too specific, that they should tell the" +
+                        "user that they don't have that information. Respond only with the new question." +
+                        f"\n\Question:\n\n{contextualized_user_question}"
+                    )
+                }
+            ],
+            model='gpt-4o',
+        )
+        _logger.debug(f'Hallucination stopper: {hallucination_stopper}.')"""
+
+        embedding_distances = [d for d in openai.k_nearest(
+            content=contextualized_user_question,
+            embeddings=self.embeddings,
+            k=20,
+        ) if d.dist < 0.64]
+        _logger.debug(f'''Found k-nearest embedding distances: {[
+            (d.e2.content, d.dist)
+            for d in embedding_distances
+        ]}.''')
+
+        embedded_knowledge = '\n'.join([d.e2.content for d in embedding_distances])
+        return f'{resources.STYLE}\n\n#Knowledge\n{embedded_knowledge}'
+
+
 
         system_gen_messages = Messages.create("You are a helpful assistant.")
         system_gen_messages.append(Message(role="user", content=system_gen_prompt))

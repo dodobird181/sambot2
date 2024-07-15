@@ -25,7 +25,7 @@ class Embedding:
         """
         Load a list of embeddings from a JSON file.
         """
-        with open(f'../{settings.LOCAL_RESOURCE_DIR}/{path}', 'r') as file:
+        with open(f'{settings.LOCAL_RESOURCE_DIR}/{path}', 'r') as file:
             _logger.debug(f'Loading embeddings from {settings.LOCAL_RESOURCE_DIR}/{path}..')
             json_embeddings = json.load(file)
             embeddings = [
@@ -43,8 +43,8 @@ class Embedding:
         """
         Save a list of embeddings to a JSON file.
         """
-        os.makedirs(f'../{settings.LOCAL_RESOURCE_DIR}', exist_ok=True)
-        with open(f'../{settings.LOCAL_RESOURCE_DIR}/{path}', 'w') as file:
+        os.makedirs(f'{settings.LOCAL_RESOURCE_DIR}', exist_ok=True)
+        with open(f'{settings.LOCAL_RESOURCE_DIR}/{path}', 'w') as file:
             _logger.debug(f'Saving {len(embeddings)} embeddings to {settings.LOCAL_RESOURCE_DIR}/{path}..')
             json.dump({
                 'embeddings': [
@@ -82,13 +82,26 @@ class Embedding:
         return embeddings
 
 
-def euclidean_distance(vec1: List[float], vec2: List[float]):
-    """Get Euclidean distance between two vectors."""
-    return math.sqrt(sum((p - q) ** 2 for p, q in zip(vec1, vec2)))
+@dataclass
+class EmbeddingDist:
+    """
+    A datapoint measuring the floating-point distance between
+    two Embedding objects.
+    """
+    e1: Embedding
+    e2: Embedding
+    dist: float
+
+    @staticmethod
+    def get(e1, e2) -> EmbeddingDist:
+        dist = math.sqrt(sum((p - q) ** 2 for p, q in zip(e1.vector, e2.vector)))
+        return EmbeddingDist(e1=e1, e2=e2, dist=dist)
 
 
-def k_nearest(content: str, embeddings: List[Embedding], k: int) -> List[Embedding]:
+def k_nearest(content: str, embeddings: List[Embedding], k: int) -> List[EmbeddingDist]:
     """Get the `k` nearest embeddings to the given `content`."""
     content_embedding = Embedding.gen(content)
-    content_distance = lambda e: euclidean_distance(e.vector, content_embedding.vector)
-    return sorted(embeddings, key=content_distance)[:k]
+    distances = [EmbeddingDist.get(content_embedding, e) for e in embeddings]
+    nearest = sorted(distances, key=lambda d: d.dist)[:k]
+    _logger.debug(f'Found k-nearest distances: {[n.dist for n in nearest]}')
+    return nearest

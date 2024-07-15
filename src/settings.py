@@ -5,9 +5,9 @@ class ConfigurationError(Exception):
     ...
 
 LOG_LEVEL = 'DEBUG'
-IS_DEVELOPMENT = True
-USE_DUMMY_SYSTEM_MESSAGE = True
-USE_DUMMY_OPENAI_RESPONSE = True
+IS_DEVELOPMENT = False
+USE_DUMMY_SYSTEM_MESSAGE = False
+USE_DUMMY_OPENAI_RESPONSE = False
 
 IS_PROD = (
     # production environment if all dummy flags are set to false, and the debug flag is set to false.

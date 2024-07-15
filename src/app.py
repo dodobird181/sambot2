@@ -8,6 +8,15 @@ from flask_wtf.csrf import CSRFProtect
 import asyncio
 import logger
 import flask_limiter as fl
+import warnings
+
+# Suppress the specific UserWarning from flask_limiter
+warnings.filterwarnings(
+    "ignore",
+    message="Using the in-memory storage for tracking rate limits as no storage was explicitly specified. This is not recommended for production use.*",
+    category=UserWarning,
+    module='flask_limiter.extension'
+)
 
 """
 TODO LIST:
