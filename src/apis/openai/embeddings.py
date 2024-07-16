@@ -25,7 +25,7 @@ class Embedding:
         """
         Load a list of embeddings from a JSON file.
         """
-        with open(f'../{settings.LOCAL_RESOURCE_DIR}/{path}', 'r') as file:
+        with open(f'{settings.LOCAL_RESOURCE_DIR}/{path}', 'r') as file:
             _logger.debug(f'Loading embeddings from {settings.LOCAL_RESOURCE_DIR}/{path}..')
             json_embeddings = json.load(file)
             embeddings = [
@@ -43,8 +43,8 @@ class Embedding:
         """
         Save a list of embeddings to a JSON file.
         """
-        os.makedirs(f'../{settings.LOCAL_RESOURCE_DIR}', exist_ok=True)
-        with open(f'../{settings.LOCAL_RESOURCE_DIR}/{path}', 'w') as file:
+        os.makedirs(f'{settings.LOCAL_RESOURCE_DIR}', exist_ok=True)
+        with open(f'{settings.LOCAL_RESOURCE_DIR}/{path}', 'w') as file:
             _logger.debug(f'Saving {len(embeddings)} embeddings to {settings.LOCAL_RESOURCE_DIR}/{path}..')
             json.dump({
                 'embeddings': [
