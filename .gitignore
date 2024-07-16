@@ -2,7 +2,7 @@
 .database.db
 .vscode
 src/_dev_secrets.py
-data/
+
 test_data/
 _start_dev.py
 .pkldb/
