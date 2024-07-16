@@ -62,14 +62,14 @@ from apis.openai import Embedding, k_nearest
 
 path = 'embeddings.json'
 
-embeddings = Embedding.gen_list(content_list)
-Embedding.save_list(embeddings, path)
-embeddings = Embedding.load_list(path)
+#embeddings = Embedding.gen_list(content_list)
+#Embedding.save_list(embeddings, path)
+#embeddings = Embedding.load_list(path)
 
-while True:
-    content = input('Enter your content:\n')
-    nearest = k_nearest(content, embeddings, k=3)
-    print([n.content for n in nearest])
+#while True:
+#    content = input('Enter your content:\n')
+#    nearest = k_nearest(content, embeddings, k=3)
+#    print([n.content for n in nearest])
 
 
 

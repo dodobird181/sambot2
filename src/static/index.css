@@ -84,6 +84,12 @@ h1 {
     .inline {
         text-align: left;
     }
+    .resume {
+        margin-bottom: 10px;
+        width: 30px;
+        height: 30px;
+        margin-left: -2px;
+    }
   }
 
 /*Add cool font*/
