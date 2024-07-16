@@ -41,6 +41,12 @@ h1 {
     margin-left: 20px;
     display: inline;
 }
+.resume {
+    margin-bottom: 10px;
+    width: 30px;
+    height: 30px;
+    margin-left: -2px;
+}
 
 .disclaimer {
     margin: 0 0 0 20px;
