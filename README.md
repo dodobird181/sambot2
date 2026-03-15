@@ -4,9 +4,9 @@ A Python [Flask](https://flask.palletsprojects.com/en/3.0.x/) chatbot built on-t
 <img src="https://github.com/user-attachments/assets/7550fd69-5ca4-4932-8923-af7239b3ecb1" alt="screenshot1" width="500"/>
 
 ### Goals
-When OpenAI's Chat-GPT model was first released to the public in November 2022, my friends and I were instantly amazed at it's capacity to hold a semi-rational conversation and use logic to solve problems. At the time, I didn't understand how it worked (and I still don't really,) but I knew that I would learn more about large-language models like Chat-GPT, and deploying a full-stack web application using Python, by using their API to build something unique. 
+When OpenAI's Chat-GPT model was first released to the public in November 2022, my friends and I were instantly amazed at it's capacity to hold a semi-rational conversation and use logic to solve problems. At the time, I didn't understand how it worked, but I knew that I would learn more about large-language models like Chat-GPT, and deploying a full-stack web application using Python, by using their API to build something unique. 
 
-Some of my low-level goals for this project were to:
+Some of my goals for this project were to:
 - Create a frontend GUI that communicates with a Python server;
 - Stream data from the backend to the frontend to increase OpenAI's response speed;
 - Prompt-engineer Chat-GPT to "act" like me;
