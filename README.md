@@ -1,5 +1,5 @@
 # Sambot
-A Python [Flask](https://flask.palletsprojects.com/en/3.0.x/) chatbot built on-top of OpenAI's [chat completion](https://platform.openai.com/docs/api-reference/chat/create) and [embeddings](https://platform.openai.com/docs/api-reference/embeddings/create) API endpoints that produces truthful answers to a pre-determined set of questions, and engages in general conversation while taking on a personality similar to mine (the real Sam Morris).
+A Python [Flask](https://flask.palletsprojects.com/en/3.0.x/) chatbot built on-top of OpenAI's [chat completion](https://platform.openai.com/docs/api-reference/chat/create) and [embeddings](https://platform.openai.com/docs/api-reference/embeddings/create) API endpoints that produces truthful answers to a pre-determined set of questions, and engages in general conversation while taking on a personality similar to mine (the real Sam Morris). See the code [here](https://github.com/dodobird181/sambot2/).
 
 <img src="https://github.com/user-attachments/assets/7550fd69-5ca4-4932-8923-af7239b3ecb1" alt="screenshot1" width="500" style="margin-bottom: 20px;"/>
 
